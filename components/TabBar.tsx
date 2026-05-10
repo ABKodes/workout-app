@@ -5,15 +5,15 @@ interface Props {
   days: Day[]
   active: number
   onSelect: (i: number) => void
-  showNutrition: boolean
-  onNutrition: () => void
+  showStats: boolean
+  onStats: () => void
 }
 
-export default function TabBar({ days, active, onSelect, showNutrition, onNutrition }: Props) {
+export default function TabBar({ days, active, onSelect, showStats, onStats }: Props) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a] border-t border-[#1e1e1e] flex">
       {days.map((d, i) => {
-        const isActive = !showNutrition && active === i
+        const isActive = !showStats && active === i
         return (
           <button
             key={d.label}
@@ -29,14 +29,14 @@ export default function TabBar({ days, active, onSelect, showNutrition, onNutrit
         )
       })}
       <button
-        onClick={onNutrition}
-        className={`flex-1 flex flex-col items-center py-1.5 px-0.5 transition-colors ${showNutrition ? 'bg-[#1a0800]' : ''}`}
+        onClick={onStats}
+        className={`flex-1 flex flex-col items-center py-1.5 px-0.5 transition-colors ${showStats ? 'bg-[#1a0800]' : ''}`}
       >
-        <span className="text-lg leading-none">🥗</span>
-        <span className={`text-[9px] font-bold mt-0.5 tracking-wide ${showNutrition ? 'text-orange-500' : 'text-gray-600'}`}>
-          NUT
+        <span className="text-lg leading-none">📊</span>
+        <span className={`text-[9px] font-bold mt-0.5 tracking-wide ${showStats ? 'text-orange-500' : 'text-gray-600'}`}>
+          STATS
         </span>
-        {showNutrition && <span className="w-1 h-1 rounded-full bg-orange-500 mt-0.5" />}
+        {showStats && <span className="w-1 h-1 rounded-full bg-orange-500 mt-0.5" />}
       </button>
     </nav>
   )

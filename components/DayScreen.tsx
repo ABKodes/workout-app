@@ -10,11 +10,18 @@ import TipBlock from './TipBlock'
 import RestTimer from './RestTimer'
 import OneRMCalc from './OneRMCalc'
 import PlateCalc from './PlateCalc'
+import GuidedSession from './GuidedSession'
 
 interface Props {
   day: Day
   dayIndex: number
   allLogs: SessionLog[]
+}
+
+function upperReps(reps: string): number {
+  const nums = reps.match(/\d+/g)
+  if (!nums) return 0
+  return parseInt(nums[nums.length - 1])
 }
 
 export default function DayScreen({ day, dayIndex, allLogs }: Props) {
@@ -23,6 +30,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const [ormExercise, setOrmExercise] = useState<Exercise | null>(null)
   const [platesExercise, setPlatesExercise] = useState<Exercise | null>(null)
   const [finished, setFinished] = useState(false)
+  const [guided, setGuided] = useState(false)
 
   const isGym = day.badge === 'gym'
   const allExercises = day.sections.flatMap(s => s.rows).filter(e => parseInt(e.sets) > 0)
@@ -35,6 +43,32 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const handleFinish = () => {
     finishSession()
     setFinished(true)
+  }
+
+  const progressTips = finished ? allExercises.flatMap(e => {
+    const log = todayLog?.exercises[e.name]
+    if (!log) return []
+    const upper = upperReps(e.reps)
+    const done = log.sets.filter(s => s.done)
+    if (done.length === 0 || !done.every(s => parseInt(s.reps) >= upper)) return []
+    const maxW = Math.max(...done.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
+    if (isNaN(maxW)) return []
+    return [`💡 ${e.name} — you hit all reps. Try ${maxW + 2.5}kg next session.`]
+  }) : []
+
+  if (guided) {
+    return (
+      <GuidedSession
+        day={day}
+        todayLog={todayLog}
+        prevLog={prevLog ?? undefined}
+        allLogs={allLogs}
+        onLogSet={logSet}
+        onSetNote={setNote}
+        onFinish={() => { finishSession(); setGuided(false); setFinished(true) }}
+        onExit={() => setGuided(false)}
+      />
+    )
   }
 
   return (
@@ -51,13 +85,21 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
           </div>
         </div>
         {isGym && allExercises.length > 0 && (
-          <div className="mt-2 inline-flex items-center gap-2 bg-[#1a1a1a] rounded-full px-3 py-1 border border-[#2a2a2a]">
-            <div className="flex gap-0.5">
-              {allExercises.map((_, i) => (
-                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < doneCount ? 'bg-orange-500' : 'bg-[#333]'}`} />
-              ))}
+          <div className="mt-2 flex items-center gap-3">
+            <div className="inline-flex items-center gap-2 bg-[#1a1a1a] rounded-full px-3 py-1 border border-[#2a2a2a]">
+              <div className="flex gap-0.5">
+                {allExercises.map((_, i) => (
+                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < doneCount ? 'bg-orange-500' : 'bg-[#333]'}`} />
+                ))}
+              </div>
+              <span className="text-[11px] text-gray-400 font-semibold">{doneCount} / {allExercises.length} done</span>
             </div>
-            <span className="text-[11px] text-gray-400 font-semibold">{doneCount} / {allExercises.length} done</span>
+            <button
+              onClick={() => setGuided(true)}
+              className="text-[11px] font-bold text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-3 py-1 hover:bg-orange-900/40 transition-colors"
+            >
+              🎯 Guided session
+            </button>
           </div>
         )}
       </div>
@@ -76,6 +118,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
                 exercise={exercise}
                 todayLog={todayLog?.exercises[exercise.name]}
                 prevLog={prevLog?.exercises[exercise.name]}
+                allLogs={allLogs}
                 onSetUpdate={(si2, data) => logSet(exercise.name, si2, data)}
                 onSetDone={secs => secs > 0 && setTimerSeconds(secs)}
                 onOpenOrm={() => setOrmExercise(exercise)}
@@ -121,8 +164,20 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
               ✓ Finish session
             </button>
           ) : (
-            <div className="mt-3 w-full py-3 bg-[#0a2a12] border border-green-900 text-green-400 font-bold text-sm rounded-xl text-center">
-              🔥 Session logged — great work!
+            <div>
+              <div className="mt-3 w-full py-3 bg-[#0a2a12] border border-green-900 text-green-400 font-bold text-sm rounded-xl text-center">
+                🔥 Session logged — great work!
+              </div>
+              {progressTips.length > 0 && (
+                <div className="mt-3 bg-[#111] rounded-xl border border-[#1e1e1e] p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Progression tips</p>
+                  <div className="space-y-1.5">
+                    {progressTips.map((t, i) => (
+                      <p key={i} className="text-sm text-gray-300 leading-relaxed">{t}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

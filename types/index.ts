@@ -43,4 +43,11 @@ export interface SessionLog {
   exercises: Record<string, ExerciseLog>
   sessionNote: string
   completed: boolean
+  pendingSync: boolean
+}
+
+export interface BodyWeightEntry {
+  date: string
+  weight: number
+  pendingSync: boolean
 }

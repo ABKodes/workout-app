@@ -1,12 +1,16 @@
 'use client'
 import { useState } from 'react'
-import { Exercise, ExerciseLog } from '@/types'
+import { Exercise, ExerciseLog, SessionLog } from '@/types'
+import { useProgress } from '@/lib/useProgress'
 import SetRow from './SetRow'
+import PrCelebration from './PrCelebration'
+import WarmupCalc from './WarmupCalc'
 
 interface Props {
   exercise: Exercise
   todayLog: ExerciseLog | undefined
   prevLog: ExerciseLog | undefined
+  allLogs: SessionLog[]
   onSetUpdate: (setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => void
   onSetDone: (restSeconds: number) => void
   onOpenOrm: (exercise: Exercise) => void
@@ -33,13 +37,38 @@ const setCount = (s: string): number => {
   return isNaN(n) ? 0 : n
 }
 
-export default function ExerciseCard({ exercise, todayLog, prevLog, onSetUpdate, onSetDone, onOpenOrm, onOpenPlates }: Props) {
+export default function ExerciseCard({ exercise, todayLog, prevLog, allLogs, onSetUpdate, onSetDone, onOpenOrm, onOpenPlates }: Props) {
   const [expanded, setExpanded] = useState(true)
+  const [showWarmup, setShowWarmup] = useState(false)
+  const [prWeight, setPrWeight] = useState<number | null>(null)
+
+  const { prWeight: historicPR } = useProgress(exercise.name, allLogs)
   const numSets = setCount(exercise.sets)
   const isLoggable = numSets > 0
 
+  const handleSetUpdate = (setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => {
+    if (data.weight !== undefined) {
+      const w = parseFloat(data.weight)
+      if (!isNaN(w) && w > historicPR && historicPR > 0) {
+        setPrWeight(w)
+      }
+    }
+    onSetUpdate(setIndex, data)
+  }
+
+  const lastWeight = prevLog?.sets.find(s => s.weight)
+    ? parseFloat(prevLog.sets.find(s => s.weight)!.weight)
+    : 0
+
   return (
     <div className="bg-[#111] rounded-xl border border-[#1e1e1e] mb-3 overflow-hidden">
+      {prWeight !== null && (
+        <PrCelebration weight={prWeight} onDismiss={() => setPrWeight(null)} />
+      )}
+      {showWarmup && (
+        <WarmupCalc defaultWeight={lastWeight} onClose={() => setShowWarmup(false)} />
+      )}
+
       <button
         className="w-full text-left px-4 pt-3 pb-2"
         onClick={() => setExpanded(e => !e)}
@@ -75,9 +104,10 @@ export default function ExerciseCard({ exercise, todayLog, prevLog, onSetUpdate,
             <SetRow
               key={i}
               setIndex={i}
+              exercise={exercise}
               setLog={todayLog?.sets[i]}
               prevSet={prevLog?.sets[i]}
-              onUpdate={data => onSetUpdate(i, data)}
+              onUpdate={data => handleSetUpdate(i, data)}
               onDone={() => onSetDone(exercise.restSeconds)}
             />
           ))}
@@ -94,6 +124,14 @@ export default function ExerciseCard({ exercise, todayLog, prevLog, onSetUpdate,
             >
               🍽️ plates
             </button>
+            {exercise.restSeconds > 0 && (
+              <button
+                onClick={() => setShowWarmup(true)}
+                className="text-[10px] text-gray-600 hover:text-orange-400 transition-colors flex items-center gap-1"
+              >
+                🔥 warm-up
+              </button>
+            )}
           </div>
         </div>
       )}
