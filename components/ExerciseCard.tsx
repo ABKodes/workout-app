@@ -8,9 +8,12 @@ import WarmupCalc from './WarmupCalc'
 
 interface Props {
   exercise: Exercise
+  activeName: string
   todayLog: ExerciseLog | undefined
   prevLog: ExerciseLog | undefined
   allLogs: SessionLog[]
+  isSwapped: boolean
+  onSwap?: () => void
   onSetUpdate: (setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => void
   onSetDone: (restSeconds: number) => void
   onOpenOrm: (exercise: Exercise) => void
@@ -37,14 +40,26 @@ const setCount = (s: string): number => {
   return isNaN(n) ? 0 : n
 }
 
-export default function ExerciseCard({ exercise, todayLog, prevLog, allLogs, onSetUpdate, onSetDone, onOpenOrm, onOpenPlates }: Props) {
+function parseNote(note: string): { cleanNote: string; subName: string | null } {
+  const match = note.match(/^(.*?)\.\s*Sub:\s*(.+)$/)
+  if (match) return { cleanNote: match[1], subName: match[2].trim() }
+  return { cleanNote: note, subName: null }
+}
+
+export default function ExerciseCard({
+  exercise, activeName, todayLog, prevLog, allLogs,
+  isSwapped, onSwap,
+  onSetUpdate, onSetDone, onOpenOrm, onOpenPlates,
+}: Props) {
   const [expanded, setExpanded] = useState(true)
   const [showWarmup, setShowWarmup] = useState(false)
   const [prWeight, setPrWeight] = useState<number | null>(null)
 
-  const { prWeight: historicPR } = useProgress(exercise.name, allLogs)
+  const { prWeight: historicPR } = useProgress(activeName, allLogs)
   const numSets = setCount(exercise.sets)
   const isLoggable = numSets > 0
+
+  const { cleanNote, subName } = parseNote(exercise.note)
 
   const handleSetUpdate = (setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => {
     if (data.weight !== undefined) {
@@ -76,10 +91,10 @@ export default function ExerciseCard({ exercise, todayLog, prevLog, allLogs, onS
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[13px] font-bold text-white leading-snug">{exercise.name}</span>
+              <span className="text-[13px] font-bold text-white leading-snug">{activeName}</span>
               <OverloadBadge today={todayLog} prev={prevLog} />
             </div>
-            <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{exercise.note}</p>
+            <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{cleanNote}</p>
           </div>
           <span className="text-gray-600 text-xs mt-0.5 shrink-0">{expanded ? '▲' : '▼'}</span>
         </div>
@@ -97,6 +112,21 @@ export default function ExerciseCard({ exercise, todayLog, prevLog, allLogs, onS
           )}
         </div>
       </button>
+
+      {subName && onSwap && (
+        <div className="px-4 pb-2">
+          <button
+            onClick={e => { e.stopPropagation(); onSwap() }}
+            className={`text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors ${
+              isSwapped
+                ? 'bg-orange-900/30 border-orange-700/60 text-orange-400'
+                : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500 hover:border-orange-700/60 hover:text-orange-400'
+            }`}
+          >
+            {isSwapped ? `↩ Back: ${exercise.name}` : `↔ Sub: ${subName}`}
+          </button>
+        </div>
+      )}
 
       {expanded && isLoggable && (
         <div className="px-4 pb-3 border-t border-[#1e1e1e] pt-2">

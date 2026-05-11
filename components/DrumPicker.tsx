@@ -9,7 +9,7 @@ interface Props {
   width?: number
 }
 
-const ITEM_H = 40
+const ITEM_H = 32
 // Only 3 items visible: 1 above, selected in middle, 1 below
 const VISIBLE = 3
 const PAD = 1 // items of padding top/bottom

@@ -55,7 +55,7 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, onUpdate, 
             selected={weight}
             onChange={w => onUpdate({ weight: w })}
             label="kg"
-            width={80}
+            width={72}
           />
           <span className="text-gray-700 text-sm font-bold">×</span>
           <DrumPicker
@@ -63,7 +63,7 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, onUpdate, 
             selected={reps}
             onChange={r => onUpdate({ reps: r })}
             label="reps"
-            width={64}
+            width={56}
           />
         </div>
 

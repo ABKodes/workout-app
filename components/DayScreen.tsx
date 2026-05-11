@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Day, Exercise, SessionLog } from '@/types'
 import { useLog } from '@/lib/useLog'
+import { useSubstitutions } from '@/lib/useSubstitutions'
 import ExerciseCard from './ExerciseCard'
 import StreakBar from './StreakBar'
 import AlertBanner from './AlertBanner'
@@ -26,6 +27,7 @@ function upperReps(reps: string): number {
 
 export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const { todayLog, prevLog, logSet, setNote, finishSession } = useLog(dayIndex)
+  const { getActiveName, isSwapped, toggleSwap } = useSubstitutions(dayIndex)
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null)
   const [ormExercise, setOrmExercise] = useState<Exercise | null>(null)
   const [platesExercise, setPlatesExercise] = useState<Exercise | null>(null)
@@ -36,7 +38,8 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const allExercises = day.sections.flatMap(s => s.rows).filter(e => parseInt(e.sets) > 0)
   const doneCount = allExercises.filter(e => {
     const n = parseInt(e.sets)
-    const log = todayLog?.exercises[e.name]
+    const activeName = getActiveName(e.name)
+    const log = todayLog?.exercises[activeName]
     return log && log.sets.filter(s => s.done).length >= n
   }).length
 
@@ -46,7 +49,8 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   }
 
   const progressTips = finished ? allExercises.flatMap(e => {
-    const log = todayLog?.exercises[e.name]
+    const activeName = getActiveName(e.name)
+    const log = todayLog?.exercises[activeName]
     if (!log) return []
     const upper = upperReps(e.reps)
     const done = log.sets.filter(s => s.done)
@@ -112,19 +116,27 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
           {day.sections.length > 1 && <SectionHead head={section.head} plyo={section.plyo} />}
 
           {isGym ? (
-            section.rows.map(exercise => (
-              <ExerciseCard
-                key={exercise.name}
-                exercise={exercise}
-                todayLog={todayLog?.exercises[exercise.name]}
-                prevLog={prevLog?.exercises[exercise.name]}
-                allLogs={allLogs}
-                onSetUpdate={(si2, data) => logSet(exercise.name, si2, data)}
-                onSetDone={secs => secs > 0 && setTimerSeconds(secs)}
-                onOpenOrm={() => setOrmExercise(exercise)}
-                onOpenPlates={() => setPlatesExercise(exercise)}
-              />
-            ))
+            section.rows.map(exercise => {
+              const activeName = getActiveName(exercise.name)
+              const subMatch = exercise.note.match(/\.\s*Sub:\s*(.+)$/)
+              const subName = subMatch ? subMatch[1].trim() : undefined
+              return (
+                <ExerciseCard
+                  key={exercise.name}
+                  exercise={exercise}
+                  activeName={activeName}
+                  todayLog={todayLog?.exercises[activeName]}
+                  prevLog={prevLog?.exercises[activeName]}
+                  allLogs={allLogs}
+                  isSwapped={isSwapped(exercise.name)}
+                  onSwap={subName ? () => toggleSwap(exercise.name, subName) : undefined}
+                  onSetUpdate={(si2, data) => logSet(activeName, si2, data)}
+                  onSetDone={secs => secs > 0 && setTimerSeconds(secs)}
+                  onOpenOrm={() => setOrmExercise(exercise)}
+                  onOpenPlates={() => setPlatesExercise(exercise)}
+                />
+              )
+            })
           ) : (
             <div className="bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
               <div className="grid grid-cols-[1fr_auto] text-[10px] font-bold uppercase tracking-widest text-gray-600 px-4 py-2 border-b border-[#1e1e1e]">
