@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react'
 import { Day, Exercise, ExerciseLog, SessionLog, SetLog } from '@/types'
 import { useTimer } from '@/lib/useTimer'
 import { useProgress } from '@/lib/useProgress'
+import { useSubstitutions } from '@/lib/useSubstitutions'
 import PrCelebration from './PrCelebration'
 import DrumPicker from './DrumPicker'
 
@@ -16,6 +17,7 @@ function nearest(values: string[], val: string): string {
 
 interface Props {
   day: Day
+  dayIndex: number
   todayLog: SessionLog | undefined
   prevLog: SessionLog | undefined
   allLogs: SessionLog[]
@@ -30,23 +32,19 @@ function defaultReps(reps: string): string {
   return nums ? nums[0] : '8'
 }
 
-function stepVal(value: string, delta: number, min: number, inc: number): string {
-  const current = parseFloat(value) || 0
-  const next = Math.max(min, current + delta * inc)
-  return inc % 1 === 0 ? String(next) : String(Math.round(next * 10) / 10)
-}
-
 function upperReps(reps: string): number {
   const nums = reps.match(/\d+/g)
   if (!nums) return 0
   return parseInt(nums[nums.length - 1])
 }
 
-function RestCountdown({
-  seconds,
-  onDone,
-  nextLabel,
-}: {
+function parseNote(note: string): { cleanNote: string; subName: string | null } {
+  const match = note.match(/^(.*?)\.\s*Sub:\s*(.+)$/)
+  if (match) return { cleanNote: match[1], subName: match[2].trim() }
+  return { cleanNote: note, subName: null }
+}
+
+function RestCountdown({ seconds, onDone, nextLabel }: {
   seconds: number
   onDone: () => void
   nextLabel: string
@@ -95,11 +93,7 @@ function RestCountdown({
   )
 }
 
-function PRDetector({
-  exerciseName,
-  weight,
-  allLogs,
-}: {
+function PRDetector({ exerciseName, weight, allLogs }: {
   exerciseName: string
   weight: string
   allLogs: SessionLog[]
@@ -114,8 +108,10 @@ function PRDetector({
   return null
 }
 
-export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSet, onSetNote, onFinish, onExit }: Props) {
+export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLogs, onLogSet, onSetNote, onFinish, onExit }: Props) {
   const exercises = day.sections.flatMap(s => s.rows).filter(e => parseInt(e.sets) > 0)
+  const { getActiveName, isSwapped, toggleSwap } = useSubstitutions(dayIndex)
+
   const totalSets = exercises.reduce((sum, e) => sum + parseInt(e.sets), 0)
 
   const [exIdx, setExIdx] = useState(0)
@@ -127,42 +123,53 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
 
   const ex: Exercise = exercises[exIdx]
   const numSets = ex ? parseInt(ex.sets) : 0
+  const activeName = ex ? getActiveName(ex.name) : ''
+  const { cleanNote, subName } = ex ? parseNote(ex.note) : { cleanNote: '', subName: null }
 
-  const exLog: ExerciseLog | undefined = todayLog?.exercises[ex?.name]
-  const prevExLog: ExerciseLog | undefined = prevLog?.exercises[ex?.name]
+  const exLog: ExerciseLog | undefined = todayLog?.exercises[activeName]
+  const prevExLog: ExerciseLog | undefined = prevLog?.exercises[activeName]
   const prevSet: SetLog | undefined = prevExLog?.sets[setIdx]
   const currentSet: SetLog | undefined = exLog?.sets[setIdx]
+  // Prefer current session's previous set for "same as" — fall back to last session
+  const currentPrevSet: SetLog | undefined = setIdx > 0 ? exLog?.sets[setIdx - 1] : undefined
+  const sameSource = currentPrevSet?.done ? currentPrevSet : (prevSet ?? null)
+  const sameLabel = currentPrevSet?.done ? `S${setIdx}` : 'Last time'
 
   const [localWeight, setLocalWeight] = useState(
-    currentSet?.weight ?? prevSet?.weight ?? '20'
+    currentSet?.weight ?? sameSource?.weight ?? '20'
   )
   const [localReps, setLocalReps] = useState(
-    currentSet?.reps ?? prevSet?.reps ?? defaultReps(ex?.reps ?? '8')
+    currentSet?.reps ?? sameSource?.reps ?? defaultReps(ex?.reps ?? '8')
   )
 
   const doneSets = exercises.reduce((sum, e) => {
-    const log = todayLog?.exercises[e.name]
+    const log = todayLog?.exercises[getActiveName(e.name)]
     return sum + (log?.sets.filter(s => s.done).length ?? 0)
   }, 0)
 
   const nextLabel = useCallback((): string => {
-    if (setIdx < numSets - 1) return `Set ${setIdx + 2} of ${ex.name}`
-    if (exIdx < exercises.length - 1) return exercises[exIdx + 1].name
+    if (setIdx < numSets - 1) return `Set ${setIdx + 2} of ${activeName}`
+    if (exIdx < exercises.length - 1) return getActiveName(exercises[exIdx + 1].name)
     return 'Session complete!'
-  }, [setIdx, numSets, exIdx, exercises, ex])
+  }, [setIdx, numSets, exIdx, exercises, activeName, getActiveName])
 
   const advanceNext = useCallback(() => {
     setResting(false)
     if (setIdx < numSets - 1) {
-      setSetIdx(s => s + 1)
-      const nextSet = exLog?.sets[setIdx + 1]
-      const nextPrev = prevExLog?.sets[setIdx + 1]
-      setLocalWeight(nextSet?.weight ?? nextPrev?.weight ?? localWeight)
-      setLocalReps(nextSet?.reps ?? nextPrev?.reps ?? defaultReps(ex.reps))
+      const nextSetIdx = setIdx + 1
+      setSetIdx(nextSetIdx)
+      const nextSet = exLog?.sets[nextSetIdx]
+      const nextPrev = prevExLog?.sets[nextSetIdx]
+      // Prefer current session's previous set for next set's default weight
+      const nextCurrentPrev = exLog?.sets[nextSetIdx - 1]
+      const nextSameSource = nextCurrentPrev?.done ? nextCurrentPrev : (nextPrev ?? null)
+      setLocalWeight(nextSet?.weight ?? nextSameSource?.weight ?? localWeight)
+      setLocalReps(nextSet?.reps ?? nextSameSource?.reps ?? defaultReps(ex.reps))
     } else if (exIdx < exercises.length - 1) {
       const nextEx = exercises[exIdx + 1]
-      const nextExLog = todayLog?.exercises[nextEx.name]
-      const nextPrevLog = prevLog?.exercises[nextEx.name]
+      const nextActiveName = getActiveName(nextEx.name)
+      const nextExLog = todayLog?.exercises[nextActiveName]
+      const nextPrevLog = prevLog?.exercises[nextActiveName]
       setExIdx(i => i + 1)
       setSetIdx(0)
       setLocalWeight(nextExLog?.sets[0]?.weight ?? nextPrevLog?.sets[0]?.weight ?? '20')
@@ -170,40 +177,32 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
     } else {
       setDone(true)
     }
-  }, [setIdx, numSets, exIdx, exercises, exLog, prevExLog, todayLog, prevLog, localWeight, ex])
+  }, [setIdx, numSets, exIdx, exercises, exLog, prevExLog, todayLog, prevLog, localWeight, ex, getActiveName])
 
   const handleDone = useCallback(() => {
-    onLogSet(ex.name, setIdx, { weight: localWeight, reps: localReps, done: true })
+    onLogSet(activeName, setIdx, { weight: localWeight, reps: localReps, done: true })
 
     // PR check
     const allExLogs = allLogs.flatMap(l => {
-      const el = l.exercises[ex.name]
+      const el = l.exercises[activeName]
       return el ? el.sets.filter(s => s.done && s.weight !== '').map(s => parseFloat(s.weight)) : []
     }).filter(w => !isNaN(w))
     const histMax = allExLogs.length > 0 ? Math.max(...allExLogs) : 0
     const newW = parseFloat(localWeight)
-    if (!isNaN(newW) && newW > histMax && histMax > 0) {
-      setPrWeight(newW)
-    }
+    if (!isNaN(newW) && newW > histMax && histMax > 0) setPrWeight(newW)
 
-    if (ex.restSeconds > 0) {
-      setResting(true)
-    } else {
-      advanceNext()
-    }
-  }, [ex, setIdx, localWeight, localReps, onLogSet, allLogs, advanceNext])
+    if (ex.restSeconds > 0) setResting(true)
+    else advanceNext()
+  }, [activeName, setIdx, localWeight, localReps, onLogSet, allLogs, advanceNext, ex])
 
-  const handleSameAsLast = useCallback(() => {
-    if (!prevSet) return
-    setLocalWeight(prevSet.weight)
-    setLocalReps(prevSet.reps)
-    onLogSet(ex.name, setIdx, { weight: prevSet.weight, reps: prevSet.reps, done: true })
-    if (ex.restSeconds > 0) {
-      setResting(true)
-    } else {
-      advanceNext()
-    }
-  }, [prevSet, ex, setIdx, onLogSet, advanceNext])
+  const handleSameAs = useCallback(() => {
+    if (!sameSource) return
+    setLocalWeight(sameSource.weight)
+    setLocalReps(sameSource.reps)
+    onLogSet(activeName, setIdx, { weight: sameSource.weight, reps: sameSource.reps, done: true })
+    if (ex.restSeconds > 0) setResting(true)
+    else advanceNext()
+  }, [sameSource, activeName, setIdx, onLogSet, advanceNext, ex])
 
   const handleFinish = () => {
     onSetNote(note)
@@ -212,14 +211,15 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
 
   // Auto-progression tips
   const tips = done ? exercises.flatMap(e => {
-    const log = todayLog?.exercises[e.name]
+    const eName = getActiveName(e.name)
+    const log = todayLog?.exercises[eName]
     if (!log) return []
     const upper = upperReps(e.reps)
     const allHit = log.sets.filter(s => s.done).every(s => parseInt(s.reps) >= upper)
     if (!allHit || log.sets.filter(s => s.done).length === 0) return []
     const maxW = Math.max(...log.sets.filter(s => s.done).map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
     if (isNaN(maxW)) return []
-    return [`💡 ${e.name} — you hit all reps. Try ${maxW + 2.5}kg next session.`]
+    return [`💡 ${eName} — you hit all reps. Try ${maxW + 2.5}kg next session.`]
   }) : []
 
   if (!ex) return null
@@ -236,10 +236,7 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
       <div className="px-4 pt-4 pb-3 border-b border-[#1e1e1e]">
         <div className="flex items-center gap-3 mb-2">
           <div className="flex-1 bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
-            <div
-              className="h-full bg-orange-500 transition-all duration-500"
-              style={{ width: `${progress * 100}%` }}
-            />
+            <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${progress * 100}%` }} />
           </div>
           <button onClick={onExit} className="text-gray-500 hover:text-white text-xl leading-none">✕</button>
         </div>
@@ -247,7 +244,7 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
       </div>
 
       {done ? (
-        /* Session complete screen */
+        /* Session complete */
         <div className="flex-1 overflow-y-auto px-4 py-6">
           <div className="text-center mb-6">
             <div className="text-5xl mb-3">🔥</div>
@@ -259,9 +256,7 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
             <div className="bg-[#111] rounded-xl border border-[#1e1e1e] p-4 mb-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-3">Progression tips</p>
               <div className="space-y-2">
-                {tips.map((t, i) => (
-                  <p key={i} className="text-sm text-gray-300 leading-relaxed">{t}</p>
-                ))}
+                {tips.map((t, i) => <p key={i} className="text-sm text-gray-300 leading-relaxed">{t}</p>)}
               </div>
             </div>
           )}
@@ -274,7 +269,6 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
             onChange={e => setNote(e.target.value)}
             className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-orange-500 focus:outline-none resize-none leading-relaxed mb-4"
           />
-
           <button
             onClick={handleFinish}
             className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-black font-black text-sm rounded-xl transition-colors"
@@ -285,22 +279,30 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
       ) : resting ? (
         /* Rest timer */
         <div className="flex-1 flex flex-col px-4 py-6">
-          <RestCountdown
-            seconds={ex.restSeconds}
-            onDone={advanceNext}
-            nextLabel={nextLabel()}
-          />
+          <RestCountdown seconds={ex.restSeconds} onDone={advanceNext} nextLabel={nextLabel()} />
         </div>
       ) : (
-        /* Active set screen */
+        /* Active set */
         <div className="flex-1 overflow-y-auto px-4 py-5">
           {/* Exercise context */}
           <div className="mb-5">
             <p className="text-[11px] text-gray-600 mb-1">
               Exercise {exIdx + 1} of {exercises.length}
             </p>
-            <h2 className="text-2xl font-black text-white leading-tight">{ex.name}</h2>
-            {ex.note && <p className="text-[12px] text-gray-500 mt-1">{ex.note}</p>}
+            <h2 className="text-2xl font-black text-white leading-tight">{activeName}</h2>
+            {cleanNote && <p className="text-[12px] text-gray-500 mt-1">{cleanNote}</p>}
+            {subName && (
+              <button
+                onClick={() => toggleSwap(ex.name, subName)}
+                className={`mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors ${
+                  isSwapped(ex.name)
+                    ? 'bg-orange-900/30 border-orange-700/60 text-orange-400'
+                    : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500 hover:border-orange-700/60 hover:text-orange-400'
+                }`}
+              >
+                {isSwapped(ex.name) ? `↩ Back: ${ex.name}` : `↔ Sub: ${subName}`}
+              </button>
+            )}
           </div>
 
           {/* Set pills */}
@@ -344,14 +346,14 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
             />
           </div>
 
-          {/* Same as last time */}
-          {prevSet && (
+          {/* Same as button */}
+          {sameSource && (
             <div className="flex justify-center mb-5">
               <button
-                onClick={handleSameAsLast}
+                onClick={handleSameAs}
                 className="text-[12px] text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-4 py-1.5 hover:bg-orange-900/40 transition-colors"
               >
-                Same as last time ({prevSet.weight}kg × {prevSet.reps})
+                ↩ {sameLabel} · {sameSource.weight}kg × {sameSource.reps}
               </button>
             </div>
           )}
@@ -364,7 +366,6 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
             ✓ Done — start rest timer
           </button>
 
-          {/* What's next */}
           <p className="text-center text-[11px] text-gray-600 mt-3">After rest: {nextLabel()}</p>
         </div>
       )}

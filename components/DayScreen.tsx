@@ -64,6 +64,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     return (
       <GuidedSession
         day={day}
+        dayIndex={dayIndex}
         todayLog={todayLog}
         prevLog={prevLog ?? undefined}
         allLogs={allLogs}
