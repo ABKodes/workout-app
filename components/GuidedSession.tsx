@@ -4,6 +4,15 @@ import { Day, Exercise, ExerciseLog, SessionLog, SetLog } from '@/types'
 import { useTimer } from '@/lib/useTimer'
 import { useProgress } from '@/lib/useProgress'
 import PrCelebration from './PrCelebration'
+import DrumPicker from './DrumPicker'
+
+const WEIGHTS = Array.from({ length: 81 }, (_, i) => String(Math.round(i * 2.5 * 10) / 10))
+const REPS = Array.from({ length: 30 }, (_, i) => String(i + 1))
+function nearest(values: string[], val: string): string {
+  const n = parseFloat(val)
+  if (isNaN(n)) return values[0]
+  return values.reduce((best, v) => Math.abs(parseFloat(v) - n) < Math.abs(parseFloat(best) - n) ? v : best)
+}
 
 interface Props {
   day: Day
@@ -317,39 +326,22 @@ export default function GuidedSession({ day, todayLog, prevLog, allLogs, onLogSe
             })}
           </div>
 
-          {/* Big steppers */}
-          <div className="flex gap-4 justify-center mb-4">
-            {/* Weight */}
-            <div className="flex flex-col items-center">
-              <p className="text-[10px] text-gray-600 uppercase tracking-widest mb-2">Weight</p>
-              <div className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl px-3 py-3">
-                <button
-                  onClick={() => setLocalWeight(stepVal(localWeight, -1, 0, 2.5))}
-                  className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-orange-400 font-black text-2xl"
-                >−</button>
-                <span className="text-xl font-black text-white w-20 text-center">{localWeight} kg</span>
-                <button
-                  onClick={() => setLocalWeight(stepVal(localWeight, 1, 0, 2.5))}
-                  className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-orange-400 font-black text-2xl"
-                >+</button>
-              </div>
-            </div>
-
-            {/* Reps */}
-            <div className="flex flex-col items-center">
-              <p className="text-[10px] text-gray-600 uppercase tracking-widest mb-2">Reps</p>
-              <div className="flex items-center gap-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl px-3 py-3">
-                <button
-                  onClick={() => setLocalReps(stepVal(localReps, -1, 1, 1))}
-                  className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-orange-400 font-black text-2xl"
-                >−</button>
-                <span className="text-xl font-black text-white w-10 text-center">{localReps}</span>
-                <button
-                  onClick={() => setLocalReps(stepVal(localReps, 1, 1, 1))}
-                  className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-orange-400 font-black text-2xl"
-                >+</button>
-              </div>
-            </div>
+          {/* Drum pickers */}
+          <div className="flex gap-6 justify-center mb-4">
+            <DrumPicker
+              values={WEIGHTS}
+              selected={nearest(WEIGHTS, localWeight)}
+              onChange={w => setLocalWeight(w)}
+              label="kg"
+              width={100}
+            />
+            <DrumPicker
+              values={REPS}
+              selected={nearest(REPS, localReps)}
+              onChange={r => setLocalReps(r)}
+              label="reps"
+              width={80}
+            />
           </div>
 
           {/* Same as last time */}

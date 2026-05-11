@@ -1,5 +1,6 @@
 'use client'
 import { SetLog } from '@/types'
+import DrumPicker from './DrumPicker'
 
 interface Props {
   setIndex: number
@@ -15,17 +16,22 @@ function defaultReps(reps: string): string {
   return nums ? nums[0] : '8'
 }
 
-function step(value: string, delta: number, min: number, increment: number): string {
-  const current = parseFloat(value) || 0
-  const next = Math.max(min, current + delta * increment)
-  return increment % 1 === 0 ? String(next) : String(Math.round(next * 10) / 10)
+// 0 to 200 in steps of 2.5
+const WEIGHTS = Array.from({ length: 81 }, (_, i) => String(Math.round(i * 2.5 * 10) / 10))
+// 1 to 30
+const REPS = Array.from({ length: 30 }, (_, i) => String(i + 1))
+
+function nearest(values: string[], val: string): string {
+  const n = parseFloat(val)
+  if (isNaN(n)) return values[0]
+  return values.reduce((best, v) => Math.abs(parseFloat(v) - n) < Math.abs(parseFloat(best) - n) ? v : best)
 }
 
 export default function SetRow({ setIndex, exercise, setLog, prevSet, onUpdate, onDone }: Props) {
   const done = setLog?.done ?? false
 
-  const weight = setLog?.weight ?? prevSet?.weight ?? '20'
-  const reps = setLog?.reps ?? prevSet?.reps ?? defaultReps(exercise.reps)
+  const weight = nearest(WEIGHTS, setLog?.weight ?? prevSet?.weight ?? '20')
+  const reps = nearest(REPS, setLog?.reps ?? prevSet?.reps ?? defaultReps(exercise.reps))
 
   const handleDone = () => {
     onUpdate({ done: !done, weight, reps })
@@ -39,58 +45,46 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, onUpdate, 
   }
 
   return (
-    <div className={`py-2 transition-opacity ${done ? 'opacity-50' : ''}`}>
-      <div className="flex items-center gap-2">
+    <div className={`py-2 transition-opacity ${done ? 'opacity-40' : ''}`}>
+      <div className="flex items-center gap-1 mb-1.5">
         <span className="text-[10px] text-gray-600 w-5 shrink-0">S{setIndex + 1}</span>
 
-        {/* Weight stepper */}
-        <div className="flex items-center gap-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-1 py-1">
-          <button
-            onClick={() => onUpdate({ weight: step(weight, -1, 0, 2.5) })}
-            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-400 font-bold text-sm"
-          >−</button>
-          <span className="text-[12px] text-white font-semibold w-14 text-center">{weight} kg</span>
-          <button
-            onClick={() => onUpdate({ weight: step(weight, 1, 0, 2.5) })}
-            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-400 font-bold text-sm"
-          >+</button>
+        <div className="flex items-center gap-2 flex-1">
+          <DrumPicker
+            values={WEIGHTS}
+            selected={weight}
+            onChange={w => onUpdate({ weight: w })}
+            label="kg"
+            width={80}
+          />
+          <span className="text-gray-700 text-sm font-bold">×</span>
+          <DrumPicker
+            values={REPS}
+            selected={reps}
+            onChange={r => onUpdate({ reps: r })}
+            label="reps"
+            width={64}
+          />
         </div>
 
-        <span className="text-gray-700 text-[10px]">×</span>
-
-        {/* Reps stepper */}
-        <div className="flex items-center gap-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-1 py-1">
-          <button
-            onClick={() => onUpdate({ reps: step(reps, -1, 1, 1) })}
-            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-400 font-bold text-sm"
-          >−</button>
-          <span className="text-[12px] text-white font-semibold w-8 text-center">{reps}</span>
-          <button
-            onClick={() => onUpdate({ reps: step(reps, 1, 1, 1) })}
-            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-400 font-bold text-sm"
-          >+</button>
-        </div>
-
-        {/* Done button */}
         <button
           onClick={handleDone}
-          className={`ml-auto w-7 h-7 rounded-full flex items-center justify-center border transition-all ${
+          className={`ml-auto w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
             done
               ? 'bg-orange-500 border-orange-500 text-black'
               : 'border-[#2a2a2a] text-gray-600 hover:border-orange-500'
           }`}
         >
-          <span className="text-[11px] font-bold">✓</span>
+          <span className="text-[12px] font-bold">✓</span>
         </button>
       </div>
 
-      {/* Same as last time */}
       {prevSet && !done && (
         <button
           onClick={handleSameAsLast}
-          className="mt-1.5 ml-7 text-[10px] text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-2.5 py-0.5 hover:bg-orange-900/40 transition-colors"
+          className="ml-6 text-[10px] text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-2.5 py-0.5 hover:bg-orange-900/40 transition-colors"
         >
-          Same as last time ({prevSet.weight}kg × {prevSet.reps})
+          Same as last ({prevSet.weight}kg × {prevSet.reps})
         </button>
       )}
     </div>
