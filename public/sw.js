@@ -25,21 +25,23 @@ function scheduleNext(timeStr) {
 // ── Rest timer ────────────────────────────────────────────────────────
 let restEndTimeout = null
 
-function cancelRest() {
+async function cancelRest() {
   if (restEndTimeout) { clearTimeout(restEndTimeout); restEndTimeout = null }
-  self.registration.getNotifications({ tag: 'rest-timer' })
-    .then(ns => ns.forEach(n => n.close()))
+  // Close both the visible "rest until X" banner and any pending OS-scheduled "rest over"
+  const [timerNs, endNs] = await Promise.all([
+    self.registration.getNotifications({ tag: 'rest-timer' }),
+    self.registration.getNotifications({ tag: 'rest-end' }),
+  ])
+  timerNs.forEach(n => n.close())
+  endNs.forEach(n => n.close())
 }
 
-function startRest(endsAt) {
-  cancelRest()
+async function startRest(endsAt) {
+  await cancelRest()
 
-  // Format end time as "2:36 PM"
-  const endDate = new Date(endsAt)
-  const label = endDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-
-  // Show one static notification immediately
-  self.registration.showNotification(`⏱ Rest until ${label}`, {
+  // 1. Show an immediate silent banner: "Rest until 2:36 PM"
+  const label = new Date(endsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+  await self.registration.showNotification(`⏱ Rest until ${label}`, {
     body: 'Tap to return to your workout',
     icon: '/icon-192.png',
     tag: 'rest-timer',
@@ -47,18 +49,28 @@ function startRest(endsAt) {
     silent: true,
   })
 
-  // Buzz once when time is up
-  const delay = Math.max(0, endsAt - Date.now())
-  restEndTimeout = setTimeout(() => {
-    restEndTimeout = null
-    self.registration.showNotification('💪 Rest over — next set!', {
-      body: "Get back to it!",
-      icon: '/icon-192.png',
-      tag: 'rest-timer',
-      renotify: true,
-      vibrate: [200, 100, 200],
+  const endPayload = {
+    body: 'Get back to it!',
+    icon: '/icon-192.png',
+    tag: 'rest-end',
+    renotify: true,
+    vibrate: [200, 100, 200],
+  }
+
+  // 2a. Preferred: OS-level scheduled notification — fires even if the SW is killed
+  if ('TimestampTrigger' in self) {
+    await self.registration.showNotification('💪 Rest over — next set!', {
+      ...endPayload,
+      showTrigger: new TimestampTrigger(endsAt),
     })
-  }, delay)
+  } else {
+    // 2b. Fallback: in-process setTimeout (works while SW stays alive)
+    const delay = Math.max(0, endsAt - Date.now())
+    restEndTimeout = setTimeout(async () => {
+      restEndTimeout = null
+      await self.registration.showNotification('💪 Rest over — next set!', endPayload)
+    }, delay)
+  }
 }
 
 // ── Message handler ───────────────────────────────────────────────────
@@ -68,8 +80,8 @@ self.addEventListener('message', event => {
     if (notifTimeout) clearTimeout(notifTimeout)
     notifTimeout = null
   }
-  if (event.data?.type === 'REST_START') startRest(event.data.endsAt)
-  if (event.data?.type === 'REST_CANCEL') cancelRest()
+  if (event.data?.type === 'REST_START') event.waitUntil(startRest(event.data.endsAt))
+  if (event.data?.type === 'REST_CANCEL') event.waitUntil(cancelRest())
 })
 
 // ── Notification click ────────────────────────────────────────────────
