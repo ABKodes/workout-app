@@ -93,7 +93,7 @@ export default function RestTimer({ seconds, onClose }: Props) {
             Skip
           </button>
         </div>
-        <p className="text-center text-[11px] text-gray-700 mt-4">Lock your screen — the timer will keep counting</p>
+        <p className="text-center text-[11px] text-gray-700 mt-4">Lock your screen — you'll be notified when rest is done</p>
       </div>
     </div>
   )

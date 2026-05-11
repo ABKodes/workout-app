@@ -22,11 +22,11 @@ function scheduleNext(timeStr) {
   }, next - now)
 }
 
-// ── Rest timer countdown ──────────────────────────────────────────────
-let restInterval = null
+// ── Rest timer ────────────────────────────────────────────────────────
+let restEndTimeout = null
 
 function cancelRest() {
-  if (restInterval) { clearInterval(restInterval); restInterval = null }
+  if (restEndTimeout) { clearTimeout(restEndTimeout); restEndTimeout = null }
   self.registration.getNotifications({ tag: 'rest-timer' })
     .then(ns => ns.forEach(n => n.close()))
 }
@@ -34,34 +34,31 @@ function cancelRest() {
 function startRest(endsAt) {
   cancelRest()
 
-  function tick() {
-    const remaining = Math.round((endsAt - Date.now()) / 1000)
+  // Format end time as "2:36 PM"
+  const endDate = new Date(endsAt)
+  const label = endDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 
-    if (remaining <= 0) {
-      if (restInterval) { clearInterval(restInterval); restInterval = null }
-      self.registration.showNotification('💪 Rest over — next set!', {
-        body: "Get back to it!",
-        icon: '/icon-192.png',
-        tag: 'rest-timer',
-        renotify: true,
-        vibrate: [200, 100, 200],
-      })
-      return
-    }
+  // Show one static notification immediately
+  self.registration.showNotification(`⏱ Rest until ${label}`, {
+    body: 'Tap to return to your workout',
+    icon: '/icon-192.png',
+    tag: 'rest-timer',
+    renotify: false,
+    silent: true,
+  })
 
-    const m = Math.floor(remaining / 60)
-    const s = remaining % 60
-    self.registration.showNotification(`⏱ ${m}:${String(s).padStart(2, '0')} rest remaining`, {
-      body: 'Tap to return to your workout',
+  // Buzz once when time is up
+  const delay = Math.max(0, endsAt - Date.now())
+  restEndTimeout = setTimeout(() => {
+    restEndTimeout = null
+    self.registration.showNotification('💪 Rest over — next set!', {
+      body: "Get back to it!",
       icon: '/icon-192.png',
       tag: 'rest-timer',
-      renotify: false,
-      silent: true,
+      renotify: true,
+      vibrate: [200, 100, 200],
     })
-  }
-
-  tick() // show immediately
-  restInterval = setInterval(tick, 1000)
+  }, delay)
 }
 
 // ── Message handler ───────────────────────────────────────────────────
