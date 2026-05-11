@@ -130,17 +130,40 @@ export default function ExerciseCard({
 
       {expanded && isLoggable && (
         <div className="px-4 pb-3 border-t border-[#1e1e1e] pt-2">
-          {Array.from({ length: numSets }, (_, i) => (
-            <SetRow
-              key={i}
-              setIndex={i}
-              exercise={exercise}
-              setLog={todayLog?.sets[i]}
-              prevSet={prevLog?.sets[i]}
-              onUpdate={data => handleSetUpdate(i, data)}
-              onDone={() => onSetDone(exercise.restSeconds)}
-            />
-          ))}
+          {(() => {
+            const currentSetIndex = todayLog
+              ? (todayLog.sets.findIndex(s => !s.done) === -1 ? numSets : todayLog.sets.findIndex(s => !s.done))
+              : 0
+            const allDone = currentSetIndex >= numSets
+            return (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Sets</span>
+                  {!allDone && (
+                    <span className="text-[10px] font-bold text-orange-400">
+                      → Set {currentSetIndex + 1} of {numSets}
+                    </span>
+                  )}
+                  {allDone && (
+                    <span className="text-[10px] font-bold text-green-400">✓ All sets done</span>
+                  )}
+                </div>
+                {Array.from({ length: numSets }, (_, i) => (
+                  <SetRow
+                    key={i}
+                    setIndex={i}
+                    exercise={exercise}
+                    setLog={todayLog?.sets[i]}
+                    prevSet={prevLog?.sets[i]}
+                    currentPrevSet={i > 0 ? todayLog?.sets[i - 1] : undefined}
+                    isActive={i === currentSetIndex}
+                    onUpdate={data => handleSetUpdate(i, data)}
+                    onDone={() => onSetDone(exercise.restSeconds)}
+                  />
+                ))}
+              </>
+            )
+          })()}
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => onOpenOrm(exercise)}

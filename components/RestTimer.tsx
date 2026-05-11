@@ -1,6 +1,6 @@
 'use client'
 import { useTimer } from '@/lib/useTimer'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface Props {
   seconds: number
@@ -9,9 +9,16 @@ interface Props {
 
 export default function RestTimer({ seconds, onClose }: Props) {
   const { fmt, running, start, skip, addTime } = useTimer()
+  const notifRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && Notification.permission === 'granted' && seconds > 0) {
+      notifRef.current = setTimeout(() => {
+        new Notification('Rest over 💪', { body: 'Time for your next set!' })
+      }, seconds * 1000)
+    }
     start(seconds, onClose)
+    return () => { if (notifRef.current) clearTimeout(notifRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -58,7 +65,7 @@ export default function RestTimer({ seconds, onClose }: Props) {
             +30s
           </button>
           <button
-            onClick={() => { skip(); onClose() }}
+            onClick={() => { if (notifRef.current) clearTimeout(notifRef.current); skip(); onClose() }}
             className="px-5 py-2 rounded-xl bg-[#1a0800] text-orange-400 text-sm font-semibold border border-orange-900 hover:bg-orange-500 hover:text-black transition-colors"
           >
             Skip
