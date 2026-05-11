@@ -1,31 +1,53 @@
 'use client'
 import { useTimer } from '@/lib/useTimer'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 interface Props {
   seconds: number
   onClose: () => void
 }
 
+async function postToSW(msg: object) {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
+  try {
+    const reg = await navigator.serviceWorker.ready
+    reg.active?.postMessage(msg)
+  } catch {}
+}
+
 export default function RestTimer({ seconds, onClose }: Props) {
   const { fmt, running, start, skip, addTime } = useTimer()
-  const notifRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && Notification.permission === 'granted' && seconds > 0) {
-      notifRef.current = setTimeout(() => {
-        new Notification('Rest over 💪', { body: 'Time for your next set!' })
-      }, seconds * 1000)
+    const endsAt = Date.now() + seconds * 1000
+
+    // Only drive SW countdown when notification permission is granted
+    if (Notification.permission === 'granted' && seconds > 0) {
+      postToSW({ type: 'REST_START', endsAt })
     }
-    start(seconds, onClose)
-    return () => { if (notifRef.current) clearTimeout(notifRef.current) }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    start(seconds, () => {
+      // Timer ended while app is in foreground — cancel SW so it doesn't
+      // show a "rest over" notification on top of the in-app experience
+      postToSW({ type: 'REST_CANCEL' })
+      onClose()
+    })
+
+    // Don't cancel SW on unmount: if user dismisses the sheet by tapping
+    // outside, the countdown should keep running visibly on the lock screen
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const total = seconds
   const remaining = parseInt(fmt.split(':')[0]) * 60 + parseInt(fmt.split(':')[1])
   const progress = total > 0 ? (total - remaining) / total : 1
   const circumference = 2 * Math.PI * 44
+
+  const handleSkip = () => {
+    postToSW({ type: 'REST_CANCEL' })
+    skip()
+    onClose()
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
@@ -65,13 +87,13 @@ export default function RestTimer({ seconds, onClose }: Props) {
             +30s
           </button>
           <button
-            onClick={() => { if (notifRef.current) clearTimeout(notifRef.current); skip(); onClose() }}
+            onClick={handleSkip}
             className="px-5 py-2 rounded-xl bg-[#1a0800] text-orange-400 text-sm font-semibold border border-orange-900 hover:bg-orange-500 hover:text-black transition-colors"
           >
             Skip
           </button>
         </div>
-        <p className="text-center text-[11px] text-gray-700 mt-4">Tap outside to dismiss</p>
+        <p className="text-center text-[11px] text-gray-700 mt-4">Lock your screen — the timer will keep counting</p>
       </div>
     </div>
   )
