@@ -10,18 +10,31 @@ import StatsScreen from '@/components/StatsScreen'
 import SyncIndicator from '@/components/SyncIndicator'
 
 function todayIndex(): number {
+  // JS: 0=Sun,1=Mon...6=Sat → remap to Mon=0...Sun=6
   const d = new Date().getDay()
   return d === 0 ? 6 : d - 1
 }
 
 function AppContent() {
-  const [active, setActive] = useState(0)
+  // Initialize directly to today — no flash since this runs client-side only
+  const [active, setActive] = useState<number>(() =>
+    typeof window !== 'undefined' ? todayIndex() : 0
+  )
   const [showStats, setShowStats] = useState(false)
   const { allLogs, syncing, offline } = useLog(active)
   const { signOut } = useAuth()
 
+  // Register service worker + reschedule notification if previously enabled
   useEffect(() => {
-    setActive(todayIndex())
+    if (!('serviceWorker' in navigator)) return
+    navigator.serviceWorker.register('/sw.js').then(async () => {
+      const enabled = localStorage.getItem('notif_enabled_v1') === 'true'
+      const time = localStorage.getItem('notif_time_v1') || '18:00'
+      if (enabled && Notification.permission === 'granted') {
+        const reg = await navigator.serviceWorker.ready
+        reg.active?.postMessage({ type: 'SCHEDULE', time })
+      }
+    }).catch(() => {})
   }, [])
 
   const handleSelectDay = (i: number) => {

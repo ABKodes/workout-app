@@ -4,8 +4,9 @@ import { SessionLog } from '@/types'
 import NutritionScreen from './NutritionScreen'
 import BodyWeightSection from './BodyWeightSection'
 import ProgressSection from './ProgressSection'
+import NotificationSettings from './NotificationSettings'
 
-type Tab = 'nutrition' | 'bodyweight' | 'progress'
+type Tab = 'progress' | 'bodyweight' | 'nutrition' | 'settings'
 
 interface Props {
   allLogs: SessionLog[]
@@ -15,10 +16,11 @@ interface Props {
 export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
   const [tab, setTab] = useState<Tab>('progress')
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'progress', label: 'Progress' },
-    { id: 'bodyweight', label: 'Body Weight' },
-    { id: 'nutrition', label: 'Nutrition' },
+  const tabs: { id: Tab; label: string; icon: string }[] = [
+    { id: 'progress', label: 'Progress', icon: '📈' },
+    { id: 'bodyweight', label: 'Weight', icon: '⚖️' },
+    { id: 'nutrition', label: 'Nutrition', icon: '🥗' },
+    { id: 'settings', label: 'Settings', icon: '⚙️' },
   ]
 
   return (
@@ -29,18 +31,17 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
       </div>
 
       {/* Pill sub-nav */}
-      <div className="flex gap-1.5 mb-5 bg-[#111] border border-[#1e1e1e] rounded-2xl p-1">
+      <div className="flex gap-1 mb-5 bg-[#111] border border-[#1e1e1e] rounded-2xl p-1">
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all ${
-              tab === t.id
-                ? 'bg-orange-500 text-black'
-                : 'text-gray-500 hover:text-gray-300'
+            className={`flex-1 py-2 rounded-xl text-[11px] font-bold transition-all flex flex-col items-center gap-0.5 ${
+              tab === t.id ? 'bg-orange-500 text-black' : 'text-gray-500'
             }`}
           >
-            {t.label}
+            <span className="text-base leading-none">{t.icon}</span>
+            <span>{t.label}</span>
           </button>
         ))}
       </div>
@@ -48,6 +49,7 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
       {tab === 'nutrition' && <NutritionScreen />}
       {tab === 'bodyweight' && <BodyWeightSection />}
       {tab === 'progress' && <ProgressSection allLogs={allLogs} activeDayIndex={activeDayIndex} />}
+      {tab === 'settings' && <NotificationSettings />}
     </div>
   )
 }
