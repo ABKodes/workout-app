@@ -9,7 +9,10 @@ interface Props {
   width?: number
 }
 
-const ITEM_H = 44
+const ITEM_H = 40
+// Only 3 items visible: 1 above, selected in middle, 1 below
+const VISIBLE = 3
+const PAD = 1 // items of padding top/bottom
 
 export default function DrumPicker({ values, selected, onChange, label, width = 88 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
@@ -21,7 +24,6 @@ export default function DrumPicker({ values, selected, onChange, label, width = 
     return i >= 0 ? i : 0
   }
 
-  // Scroll to selected value on mount and when selected changes externally
   useEffect(() => {
     const el = ref.current
     if (!el) return
@@ -53,16 +55,20 @@ export default function DrumPicker({ values, selected, onChange, label, width = 
       {label && (
         <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">{label}</p>
       )}
-      <div className="relative" style={{ height: ITEM_H * 5, width }}>
+      <div className="relative" style={{ height: ITEM_H * VISIBLE, width }}>
         {/* Fade top */}
-        <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-[#1a1a1a] to-transparent z-10 pointer-events-none rounded-t-xl" />
+        <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none rounded-t-xl"
+          style={{ height: ITEM_H, background: 'linear-gradient(to bottom, #1a1a1a 30%, transparent)' }}
+        />
         {/* Selection band */}
         <div
-          className="absolute left-0 right-0 border-t border-b border-orange-500/40 bg-orange-500/8 z-10 pointer-events-none"
-          style={{ top: ITEM_H * 2, height: ITEM_H }}
+          className="absolute left-0 right-0 border-t border-b border-orange-500/50 z-10 pointer-events-none"
+          style={{ top: ITEM_H * PAD, height: ITEM_H, background: 'rgba(249,115,22,0.06)' }}
         />
         {/* Fade bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#1a1a1a] to-transparent z-10 pointer-events-none rounded-b-xl" />
+        <div className="absolute bottom-0 left-0 right-0 z-10 pointer-events-none rounded-b-xl"
+          style={{ height: ITEM_H, background: 'linear-gradient(to top, #1a1a1a 30%, transparent)' }}
+        />
 
         <div
           ref={ref}
@@ -70,23 +76,19 @@ export default function DrumPicker({ values, selected, onChange, label, width = 
           className="h-full overflow-y-scroll bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]"
           style={{ scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {/* Top padding so first item can center */}
-          <div style={{ height: ITEM_H * 2, flexShrink: 0 }} />
+          <div style={{ height: ITEM_H * PAD, flexShrink: 0 }} />
           {values.map((v, i) => (
             <div
               key={i}
               style={{ height: ITEM_H, scrollSnapAlign: 'center', flexShrink: 0 }}
-              className={`flex items-center justify-center font-bold transition-all select-none ${
-                v === selected
-                  ? 'text-white text-[16px]'
-                  : 'text-gray-600 text-[13px]'
+              className={`flex items-center justify-center font-bold select-none transition-all ${
+                v === selected ? 'text-white text-[15px]' : 'text-gray-700 text-[12px]'
               }`}
             >
               {v}
             </div>
           ))}
-          {/* Bottom padding */}
-          <div style={{ height: ITEM_H * 2, flexShrink: 0 }} />
+          <div style={{ height: ITEM_H * PAD, flexShrink: 0 }} />
         </div>
       </div>
     </div>
