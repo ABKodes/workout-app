@@ -89,22 +89,30 @@ export default function ExerciseCard({
         <ExerciseDemo name={activeName} cleanNote={cleanNote} onClose={() => setShowDemo(false)} />
       )}
 
-      <button
-        className="w-full text-left px-4 pt-3 pb-2"
-        onClick={() => setExpanded(e => !e)}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
+      <div className="px-4 pt-3 pb-2">
+        <div className="flex items-start gap-2">
+          {/* Tapping name/note area collapses the card */}
+          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpanded(e => !e)}>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[13px] font-bold text-white leading-snug">{activeName}</span>
               <OverloadBadge today={todayLog} prev={prevLog} />
             </div>
             <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{cleanNote}</p>
           </div>
-          <span className="text-gray-600 text-xs mt-0.5 shrink-0">{expanded ? '▲' : '▼'}</span>
+          <div className="flex items-center gap-2 shrink-0 mt-0.5">
+            <button
+              onClick={() => setShowDemo(true)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#12002a] border border-violet-900/60 text-violet-400 text-[10px] font-bold active:bg-violet-900/40 transition-colors"
+            >
+              ▶ demo
+            </button>
+            <button onClick={() => setExpanded(e => !e)} className="text-gray-600 text-xs">
+              {expanded ? '▲' : '▼'}
+            </button>
+          </div>
         </div>
 
-        <div className="flex gap-1.5 mt-2 flex-wrap">
+        <div className="flex gap-1.5 mt-2 flex-wrap" onClick={() => setExpanded(e => !e)}>
           {exercise.sets !== '—' && (
             <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#12002a] text-violet-400 border border-violet-900/50 font-semibold">{exercise.sets} sets</span>
           )}
@@ -116,7 +124,7 @@ export default function ExerciseCard({
             <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#0a1a10] text-green-400 border border-green-900/50 font-semibold">{exercise.rest}</span>
           )}
         </div>
-      </button>
+      </div>
 
       {subName && onSwap && (
         <div className="px-4 pb-2">
@@ -170,12 +178,6 @@ export default function ExerciseCard({
             )
           })()}
           <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => setShowDemo(true)}
-              className="text-[10px] text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1 font-semibold"
-            >
-              ▶ demo
-            </button>
             <button
               onClick={() => onOpenOrm(exercise)}
               className="text-[10px] text-gray-600 hover:text-violet-400 transition-colors flex items-center gap-1"
