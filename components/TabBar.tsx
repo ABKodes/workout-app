@@ -37,12 +37,12 @@ export default function TabBar({ days, active, onSelect, showStats, onStats }: P
           style={{ minHeight: 62, paddingTop: 10, paddingBottom: 10 }}
         >
           {/* Active top pill */}
-          <div className={`w-6 h-0.5 rounded-full mb-1 transition-all duration-200 ${tab.isActive ? 'bg-orange-500' : 'bg-transparent'}`} />
+          <div className={`w-6 h-0.5 rounded-full mb-1 transition-all duration-200 ${tab.isActive ? 'bg-violet-500' : 'bg-transparent'}`} />
 
           <span className={`leading-none transition-all duration-200 ${tab.isActive ? 'text-2xl' : 'text-xl'}`}>
             {tab.emoji}
           </span>
-          <span className={`text-[9px] font-black tracking-widest mt-0.5 transition-colors duration-200 ${tab.isActive ? 'text-orange-500' : 'text-gray-600'}`}>
+          <span className={`text-[9px] font-black tracking-widest mt-0.5 transition-colors duration-200 ${tab.isActive ? 'text-violet-500' : 'text-gray-600'}`}>
             {tab.label}
           </span>
         </button>

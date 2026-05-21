@@ -54,7 +54,7 @@ export default function NotificationSettings() {
               onClick={() => setEnabled(!enabled)}
               disabled={permission === 'denied'}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                enabled ? 'bg-orange-500' : 'bg-[#2a2a2a]'
+                enabled ? 'bg-violet-500' : 'bg-[#2a2a2a]'
               } ${permission === 'denied' ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
               <div className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${enabled ? 'translate-x-6' : ''}`} />
@@ -69,7 +69,7 @@ export default function NotificationSettings() {
                 type="time"
                 value={time}
                 onChange={e => setTime(e.target.value)}
-                className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-3 py-2 text-sm text-white font-bold focus:border-orange-500 focus:outline-none"
+                className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-3 py-2 text-sm text-white font-bold focus:border-violet-500 focus:outline-none"
               />
             </div>
           )}
@@ -77,7 +77,7 @@ export default function NotificationSettings() {
           {/* Test button */}
           <button
             onClick={testNotification}
-            className="w-full py-2.5 text-[12px] font-bold text-gray-400 border border-[#2a2a2a] bg-[#1a1a1a] rounded-xl hover:border-orange-500 hover:text-orange-400 transition-colors"
+            className="w-full py-2.5 text-[12px] font-bold text-gray-400 border border-[#2a2a2a] bg-[#1a1a1a] rounded-xl hover:border-violet-500 hover:text-violet-400 transition-colors"
           >
             Send test notification
           </button>

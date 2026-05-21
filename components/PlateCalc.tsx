@@ -56,7 +56,7 @@ export default function PlateCalc({ onClose }: Props) {
             <input
               type="number" inputMode="decimal" placeholder="80"
               value={target} onChange={e => setTarget(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 focus:outline-none"
+              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none"
             />
           </div>
           <div className="flex-1">
@@ -67,7 +67,7 @@ export default function PlateCalc({ onClose }: Props) {
                   key={b}
                   onClick={() => setBar(b)}
                   className={`flex-1 py-2 rounded-lg text-[11px] font-bold border transition-colors ${
-                    bar === b ? 'bg-orange-500 border-orange-500 text-black' : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500'
+                    bar === b ? 'bg-violet-500 border-violet-500 text-black' : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500'
                   }`}
                 >
                   {b}kg

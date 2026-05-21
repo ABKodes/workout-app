@@ -94,14 +94,14 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
             <div className="inline-flex items-center gap-2 bg-[#1a1a1a] rounded-full px-3 py-1 border border-[#2a2a2a]">
               <div className="flex gap-0.5">
                 {allExercises.map((_, i) => (
-                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < doneCount ? 'bg-orange-500' : 'bg-[#333]'}`} />
+                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < doneCount ? 'bg-violet-500' : 'bg-[#333]'}`} />
                 ))}
               </div>
               <span className="text-[11px] text-gray-400 font-semibold">{doneCount} / {allExercises.length} done</span>
             </div>
             <button
               onClick={() => setGuided(true)}
-              className="text-[11px] font-bold text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-3 py-1 hover:bg-orange-900/40 transition-colors"
+              className="text-[11px] font-bold text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-3 py-1 hover:bg-violet-900/40 transition-colors"
             >
               🎯 Guided session
             </button>
@@ -167,12 +167,12 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
             placeholder="How did it feel? What to beat next time?"
             defaultValue={todayLog?.sessionNote ?? ''}
             onBlur={e => setNote(e.target.value)}
-            className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-orange-500 focus:outline-none resize-none leading-relaxed"
+            className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-violet-500 focus:outline-none resize-none leading-relaxed"
           />
           {!finished ? (
             <button
               onClick={handleFinish}
-              className="mt-3 w-full py-3 bg-orange-500 hover:bg-orange-400 text-black font-black text-sm rounded-xl transition-colors"
+              className="mt-3 w-full py-3 bg-violet-500 hover:bg-violet-400 text-black font-black text-sm rounded-xl transition-colors"
             >
               ✓ Finish session
             </button>

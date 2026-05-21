@@ -55,15 +55,15 @@ function ProgressChart({ points }: { points: { date: string; weight: number; isP
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: 110 }}>
       <defs>
         <linearGradient id="progGrad2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f97316" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+          <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon points={areaPoints} fill="url(#progGrad2)" />
-      <polyline points={linePoints} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={linePoints} fill="none" stroke="#8b5cf6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {points.map((p, i) => (
         <g key={i}>
-          <circle cx={toX(i)} cy={toY(p.weight)} r={p.isPR ? 5 : 3} fill={p.isPR ? '#fbbf24' : '#f97316'} />
+          <circle cx={toX(i)} cy={toY(p.weight)} r={p.isPR ? 5 : 3} fill={p.isPR ? '#fbbf24' : '#8b5cf6'} />
           {p.isPR && <text x={toX(i)} y={toY(p.weight) - 8} textAnchor="middle" fontSize="10" fill="#fbbf24">★</text>}
         </g>
       ))}
@@ -129,7 +129,7 @@ function ExerciseRow({ name, allLogs, open, onToggle }: {
                     </div>
                     <div className="h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-orange-500 rounded-full"
+                        className="h-full bg-violet-500 rounded-full"
                         style={{ width: `${relWidth}%`, opacity: 0.4 + 0.6 * (1 - i * 0.1) }}
                       />
                     </div>
@@ -197,7 +197,7 @@ function SummaryCard({ allLogs, gymExerciseNames }: { allLogs: SessionLog[]; gym
       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-3">Performance Summary</p>
       <div className="grid grid-cols-3 gap-2">
         <div className="text-center">
-          <p className="text-2xl font-black text-orange-400">{totalSessions}</p>
+          <p className="text-2xl font-black text-violet-400">{totalSessions}</p>
           <p className="text-[10px] text-gray-600 mt-0.5 leading-tight">Sessions</p>
         </div>
         <div className="text-center">

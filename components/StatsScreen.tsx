@@ -37,7 +37,7 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`flex-1 py-2 rounded-xl text-[11px] font-bold transition-all flex flex-col items-center gap-0.5 ${
-              tab === t.id ? 'bg-orange-500 text-black' : 'text-gray-500'
+              tab === t.id ? 'bg-violet-500 text-black' : 'text-gray-500'
             }`}
           >
             <span className="text-base leading-none">{t.icon}</span>

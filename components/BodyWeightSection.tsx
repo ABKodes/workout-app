@@ -43,7 +43,7 @@ function LineChart({ entries }: { entries: BodyWeightEntry[] }) {
       </defs>
       <polygon points={areaPoints} fill="url(#bwGrad)" />
       <polyline points={points} fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <polyline points={targetPoints} fill="none" stroke="#f97316" strokeWidth="1.5" strokeDasharray="4 3" strokeLinecap="round" />
+      <polyline points={targetPoints} fill="none" stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4 3" strokeLinecap="round" />
       {entries.map((e, i) => (
         <circle key={i} cx={toX(i)} cy={toY(e.weight)} r="3" fill="#4ade80" />
       ))}
@@ -98,7 +98,7 @@ export default function BodyWeightSection() {
             <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Last 5 weeks</p>
             <div className="flex gap-3 text-[9px]">
               <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-green-400 inline-block" /> Actual</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-orange-400 inline-block" style={{ borderTop: '1.5px dashed #f97316' }} /> Target</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-violet-400 inline-block" style={{ borderTop: '1.5px dashed #8b5cf6' }} /> Target</span>
             </div>
           </div>
           <LineChart entries={last5Weeks} />
@@ -117,13 +117,13 @@ export default function BodyWeightSection() {
               placeholder="e.g. 82.5"
               value={inputWeight}
               onChange={e => setInputWeight(e.target.value)}
-              className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:border-orange-500 focus:outline-none"
+              className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-700 focus:border-violet-500 focus:outline-none"
               autoFocus
             />
             <span className="flex items-center text-gray-500 text-sm font-semibold">kg</span>
             <button
               onClick={handleLog}
-              className="px-4 py-2.5 bg-orange-500 text-black font-bold text-sm rounded-xl"
+              className="px-4 py-2.5 bg-violet-500 text-black font-bold text-sm rounded-xl"
             >Save</button>
             <button
               onClick={() => setLogging(false)}
@@ -133,7 +133,7 @@ export default function BodyWeightSection() {
         ) : (
           <button
             onClick={() => setLogging(true)}
-            className="w-full py-2.5 text-sm font-bold text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-xl hover:bg-orange-900/30 transition-colors"
+            className="w-full py-2.5 text-sm font-bold text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-xl hover:bg-violet-900/30 transition-colors"
           >
             + Log today's weight
           </button>

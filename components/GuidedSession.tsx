@@ -67,7 +67,7 @@ function RestCountdown({ seconds, onDone, nextLabel }: {
           <circle cx="54" cy="54" r="44" fill="none" stroke="#1e1e1e" strokeWidth="6" />
           <circle
             cx="54" cy="54" r="44" fill="none"
-            stroke="#f97316" strokeWidth="6"
+            stroke="#8b5cf6" strokeWidth="6"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - progress)}
             strokeLinecap="round"
@@ -86,7 +86,7 @@ function RestCountdown({ seconds, onDone, nextLabel }: {
         >+30s</button>
         <button
           onClick={() => { skip(); onDone() }}
-          className="px-5 py-2 rounded-xl bg-[#1a0800] text-orange-400 text-sm font-semibold border border-orange-900"
+          className="px-5 py-2 rounded-xl bg-[#12002a] text-violet-400 text-sm font-semibold border border-violet-900"
         >Skip</button>
       </div>
     </div>
@@ -236,7 +236,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
       <div className="px-4 pt-4 pb-3 border-b border-[#1e1e1e]">
         <div className="flex items-center gap-3 mb-2">
           <div className="flex-1 bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden">
-            <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${progress * 100}%` }} />
+            <div className="h-full bg-violet-500 transition-all duration-500" style={{ width: `${progress * 100}%` }} />
           </div>
           <button onClick={onExit} className="text-gray-500 hover:text-white text-xl leading-none">✕</button>
         </div>
@@ -267,11 +267,11 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
             placeholder="How did it feel? What to beat next time?"
             value={note}
             onChange={e => setNote(e.target.value)}
-            className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-orange-500 focus:outline-none resize-none leading-relaxed mb-4"
+            className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-violet-500 focus:outline-none resize-none leading-relaxed mb-4"
           />
           <button
             onClick={handleFinish}
-            className="w-full py-4 bg-orange-500 hover:bg-orange-400 text-black font-black text-sm rounded-xl transition-colors"
+            className="w-full py-4 bg-violet-500 hover:bg-violet-400 text-black font-black text-sm rounded-xl transition-colors"
           >
             ✓ Finish &amp; save
           </button>
@@ -296,8 +296,8 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
                 onClick={() => toggleSwap(ex.name, subName)}
                 className={`mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors ${
                   isSwapped(ex.name)
-                    ? 'bg-orange-900/30 border-orange-700/60 text-orange-400'
-                    : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500 hover:border-orange-700/60 hover:text-orange-400'
+                    ? 'bg-violet-900/30 border-violet-700/60 text-violet-400'
+                    : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500 hover:border-violet-700/60 hover:text-violet-400'
                 }`}
               >
                 {isSwapped(ex.name) ? `↩ Back: ${ex.name}` : `↔ Sub: ${subName}`}
@@ -318,7 +318,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
                     isDone
                       ? 'bg-green-900/40 border-green-700 text-green-400'
                       : isCurrent
-                      ? 'bg-orange-900/40 border-orange-500 text-orange-400'
+                      ? 'bg-violet-900/40 border-violet-500 text-violet-400'
                       : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-600'
                   }`}
                 >
@@ -351,7 +351,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
             <div className="flex justify-center mb-5">
               <button
                 onClick={handleSameAs}
-                className="text-[12px] text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-4 py-1.5 hover:bg-orange-900/40 transition-colors"
+                className="text-[12px] text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-4 py-1.5 hover:bg-violet-900/40 transition-colors"
               >
                 ↩ {sameLabel} · {sameSource.weight}kg × {sameSource.reps}
               </button>
@@ -361,7 +361,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
           {/* Done button */}
           <button
             onClick={handleDone}
-            className="w-full py-4 bg-orange-500 hover:bg-orange-400 active:scale-95 text-black font-black text-base rounded-2xl transition-all"
+            className="w-full py-4 bg-violet-500 hover:bg-violet-400 active:scale-95 text-black font-black text-base rounded-2xl transition-all"
           >
             ✓ Done — start rest timer
           </button>

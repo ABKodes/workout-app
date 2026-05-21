@@ -53,7 +53,7 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
   return (
     <div className={`py-2 transition-opacity ${done ? 'opacity-40' : ''}`}>
       <div className="flex items-center gap-1 mb-1.5">
-        <span className={`text-[10px] w-5 shrink-0 font-bold ${isActive ? 'text-orange-400' : 'text-gray-600'}`}>S{setIndex + 1}</span>
+        <span className={`text-[10px] w-5 shrink-0 font-bold ${isActive ? 'text-violet-400' : 'text-gray-600'}`}>S{setIndex + 1}</span>
 
         <div className="flex items-center gap-2 flex-1">
           <DrumPicker
@@ -77,8 +77,8 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
           onClick={handleDone}
           className={`ml-auto w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
             done
-              ? 'bg-orange-500 border-orange-500 text-black'
-              : 'border-[#2a2a2a] text-gray-600 hover:border-orange-500'
+              ? 'bg-violet-500 border-violet-500 text-black'
+              : 'border-[#2a2a2a] text-gray-600 hover:border-violet-500'
           }`}
         >
           <span className="text-[12px] font-bold">✓</span>
@@ -88,7 +88,7 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
       {sameSource && !done && (
         <button
           onClick={handleSameAs}
-          className="ml-6 text-[10px] text-orange-400 border border-orange-900/60 bg-[#1a0900] rounded-full px-2.5 py-0.5 hover:bg-orange-900/40 transition-colors"
+          className="ml-6 text-[10px] text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-2.5 py-0.5 hover:bg-violet-900/40 transition-colors"
         >
           ↩ {sameLabel} · {sameSource.weight}kg × {sameSource.reps}
         </button>

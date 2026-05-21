@@ -16,7 +16,7 @@ export default function StreakBar({ allLogs }: Props) {
           <div
             key={dot.date}
             className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold transition-all ${
-              dot.completed ? 'bg-orange-500 text-black' : 'bg-[#1a1a1a] text-gray-600 border border-[#2a2a2a]'
+              dot.completed ? 'bg-violet-500 text-black' : 'bg-[#1a1a1a] text-gray-600 border border-[#2a2a2a]'
             }`}
           >
             {DAY_LABELS[i]}
@@ -24,7 +24,7 @@ export default function StreakBar({ allLogs }: Props) {
         ))}
       </div>
       <div className="text-right ml-auto">
-        <div className="text-sm font-bold text-orange-500">
+        <div className="text-sm font-bold text-violet-500">
           {weekStreak > 0 ? `🔥 ${weekStreak}wk` : `${sessionsThisWeek}/7`}
         </div>
         <div className="text-[9px] text-gray-600 leading-none">streak</div>

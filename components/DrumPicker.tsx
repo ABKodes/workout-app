@@ -62,7 +62,7 @@ export default function DrumPicker({ values, selected, onChange, label, width = 
         />
         {/* Selection band */}
         <div
-          className="absolute left-0 right-0 border-t border-b border-orange-500/50 z-10 pointer-events-none"
+          className="absolute left-0 right-0 border-t border-b border-violet-500/50 z-10 pointer-events-none"
           style={{ top: ITEM_H * PAD, height: ITEM_H, background: 'rgba(249,115,22,0.06)' }}
         />
         {/* Fade bottom */}

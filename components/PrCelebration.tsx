@@ -20,7 +20,7 @@ export default function PrCelebration({ weight, onDismiss }: Props) {
       <div className="text-center animate-[prBurst_0.4s_ease-out]">
         <div className="text-7xl mb-3">🏆</div>
         <div className="text-3xl font-black text-white mb-1">New PR!</div>
-        <div className="text-xl text-orange-400 font-bold">{weight}kg</div>
+        <div className="text-xl text-violet-400 font-bold">{weight}kg</div>
       </div>
       <style>{`
         @keyframes prBurst {

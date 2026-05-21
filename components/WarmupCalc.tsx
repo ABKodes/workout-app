@@ -40,7 +40,7 @@ export default function WarmupCalc({ defaultWeight = 0, onClose }: Props) {
             placeholder="Working weight (kg)"
             value={weight}
             onChange={e => setWeight(e.target.value)}
-            className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-orange-500 focus:outline-none"
+            className="flex-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-violet-500 focus:outline-none"
           />
           <span className="text-gray-500 text-sm font-semibold">kg</span>
         </div>
@@ -54,7 +54,7 @@ export default function WarmupCalc({ defaultWeight = 0, onClose }: Props) {
               <div key={i} className="grid grid-cols-4 px-4 py-3 border-t border-[#1a1a1a] items-center">
                 <span className="text-sm text-white font-bold">{i + 1}</span>
                 <span className="text-sm text-gray-400">{s.pct}%</span>
-                <span className="text-sm text-orange-400 font-bold">{s.kg} kg</span>
+                <span className="text-sm text-violet-400 font-bold">{s.kg} kg</span>
                 <span className="text-sm text-gray-400">{s.reps}</span>
               </div>
             ))}

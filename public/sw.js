@@ -1,5 +1,46 @@
-self.addEventListener('install', () => self.skipWaiting())
-self.addEventListener('activate', e => e.waitUntil(clients.claim()))
+const CACHE = 'workout-v1'
+
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(c => c.addAll(['/', '/manifest.json']))
+      .then(() => self.skipWaiting())
+  )
+})
+
+self.addEventListener('activate', e => e.waitUntil(
+  caches.keys().then(keys =>
+    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+  ).then(() => clients.claim())
+))
+
+// Cache-first for static assets; network-first for everything else
+self.addEventListener('fetch', event => {
+  const { request } = event
+  const url = new URL(request.url)
+
+  // Only handle same-origin GET requests
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return
+
+  if (url.pathname.startsWith('/_next/static/')) {
+    // Static assets: cache-first (they're content-hashed, safe to cache forever)
+    event.respondWith(
+      caches.match(request).then(cached => cached ?? fetch(request).then(res => {
+        const clone = res.clone()
+        caches.open(CACHE).then(c => c.put(request, clone))
+        return res
+      }))
+    )
+  } else {
+    // HTML/navigation: network-first, fall back to cache so reload never shows an error
+    event.respondWith(
+      fetch(request).then(res => {
+        const clone = res.clone()
+        caches.open(CACHE).then(c => c.put(request, clone))
+        return res
+      }).catch(() => caches.match(request).then(cached => cached ?? caches.match('/')))
+    )
+  }
+})
 
 // ── Daily workout reminder ────────────────────────────────────────────
 let notifTimeout = null
@@ -27,7 +68,6 @@ let restEndTimeout = null
 
 async function cancelRest() {
   if (restEndTimeout) { clearTimeout(restEndTimeout); restEndTimeout = null }
-  // Close both the visible "rest until X" banner and any pending OS-scheduled "rest over"
   const [timerNs, endNs] = await Promise.all([
     self.registration.getNotifications({ tag: 'rest-timer' }),
     self.registration.getNotifications({ tag: 'rest-end' }),
@@ -39,7 +79,6 @@ async function cancelRest() {
 async function startRest(endsAt) {
   await cancelRest()
 
-  // 1. Show an immediate silent banner: "Rest until 2:36 PM"
   const label = new Date(endsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
   await self.registration.showNotification(`⏱ Rest until ${label}`, {
     body: 'Tap to return to your workout',
@@ -57,14 +96,12 @@ async function startRest(endsAt) {
     vibrate: [200, 100, 200],
   }
 
-  // 2a. Preferred: OS-level scheduled notification — fires even if the SW is killed
   if ('TimestampTrigger' in self) {
     await self.registration.showNotification('💪 Rest over — next set!', {
       ...endPayload,
       showTrigger: new TimestampTrigger(endsAt),
     })
   } else {
-    // 2b. Fallback: in-process setTimeout (works while SW stays alive)
     const delay = Math.max(0, endsAt - Date.now())
     restEndTimeout = setTimeout(async () => {
       restEndTimeout = null

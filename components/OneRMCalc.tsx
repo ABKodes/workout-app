@@ -38,7 +38,7 @@ export default function OneRMCalc({ onClose }: Props) {
             <input
               type="number" inputMode="decimal" placeholder="60"
               value={weight} onChange={e => setWeight(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 focus:outline-none"
+              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none"
             />
           </div>
           <div className="flex-1">
@@ -46,16 +46,16 @@ export default function OneRMCalc({ onClose }: Props) {
             <input
               type="number" inputMode="numeric" placeholder="8"
               value={reps} onChange={e => setReps(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-orange-500 focus:outline-none"
+              className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-sm text-white focus:border-violet-500 focus:outline-none"
             />
           </div>
         </div>
 
         {orm && (
           <>
-            <div className="flex items-center justify-between mb-3 bg-[#1a0900] border border-orange-900/50 rounded-xl px-4 py-2.5">
+            <div className="flex items-center justify-between mb-3 bg-[#12002a] border border-violet-900/50 rounded-xl px-4 py-2.5">
               <span className="text-sm text-gray-400">Estimated 1RM</span>
-              <span className="text-xl font-black text-orange-400">{orm} kg</span>
+              <span className="text-xl font-black text-violet-400">{orm} kg</span>
             </div>
             <div className="space-y-1">
               {REP_TARGETS.filter(t => t !== r).map(t => {

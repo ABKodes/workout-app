@@ -28,18 +28,18 @@ export default function NutritionScreen() {
             key={m.label}
             className={`rounded-xl p-4 text-center border ${
               m.highlight
-                ? 'bg-[#1a0900] border-orange-900/50'
+                ? 'bg-[#12002a] border-violet-900/50'
                 : 'bg-[#111] border-[#1e1e1e]'
             }`}
           >
-            <div className={`text-2xl font-black ${m.highlight ? 'text-orange-400' : 'text-white'}`}>{m.val}</div>
+            <div className={`text-2xl font-black ${m.highlight ? 'text-violet-400' : 'text-white'}`}>{m.val}</div>
             <div className="text-[11px] text-gray-600 mt-1">{m.label}</div>
           </div>
         ))}
       </div>
 
       {/* Tip */}
-      <div className="border-l-[3px] border-orange-500 bg-[#111] rounded-r-xl px-4 py-3 text-sm text-gray-400 leading-relaxed mb-6">
+      <div className="border-l-[3px] border-violet-500 bg-[#111] rounded-r-xl px-4 py-3 text-sm text-gray-400 leading-relaxed mb-6">
         {nutrition.tip.split('Creatine 5g').map((part, i) =>
           i === 0 ? part : (
             <span key={i}>
@@ -69,7 +69,7 @@ export default function NutritionScreen() {
         <button
           onClick={() => setShowOrm(v => !v)}
           className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-colors ${
-            showOrm ? 'bg-orange-500 border-orange-500 text-black' : 'bg-[#111] border-[#1e1e1e] text-gray-400'
+            showOrm ? 'bg-violet-500 border-violet-500 text-black' : 'bg-[#111] border-[#1e1e1e] text-gray-400'
           }`}
         >
           🏋️ 1RM Calculator
@@ -77,7 +77,7 @@ export default function NutritionScreen() {
         <button
           onClick={() => setShowPlates(v => !v)}
           className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-colors ${
-            showPlates ? 'bg-orange-500 border-orange-500 text-black' : 'bg-[#111] border-[#1e1e1e] text-gray-400'
+            showPlates ? 'bg-violet-500 border-violet-500 text-black' : 'bg-[#111] border-[#1e1e1e] text-gray-400'
           }`}
         >
           🍽️ Plates

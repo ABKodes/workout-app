@@ -27,7 +27,7 @@ function OverloadBadge({ today, prev }: { today: ExerciseLog | undefined; prev: 
   if (isNaN(todayWeight)) return null
 
   if (isNaN(prevWeight)) {
-    return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#1a0900] text-orange-400 border border-orange-900 font-bold">First session</span>
+    return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#12002a] text-violet-400 border border-violet-900 font-bold">First session</span>
   }
   const diff = todayWeight - prevWeight
   if (diff > 0) return <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#0a2a12] text-green-400 border border-green-900 font-bold">↑ +{diff}kg PR!</span>
@@ -101,7 +101,7 @@ export default function ExerciseCard({
 
         <div className="flex gap-1.5 mt-2 flex-wrap">
           {exercise.sets !== '—' && (
-            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#1a0900] text-orange-400 border border-orange-900/50 font-semibold">{exercise.sets} sets</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#12002a] text-violet-400 border border-violet-900/50 font-semibold">{exercise.sets} sets</span>
           )}
           <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#0f1520] text-slate-400 border border-slate-800 font-semibold">{exercise.reps}</span>
           {exercise.rpe !== '—' && (
@@ -119,8 +119,8 @@ export default function ExerciseCard({
             onClick={e => { e.stopPropagation(); onSwap() }}
             className={`text-[10px] font-bold px-2.5 py-1 rounded-full border transition-colors ${
               isSwapped
-                ? 'bg-orange-900/30 border-orange-700/60 text-orange-400'
-                : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500 hover:border-orange-700/60 hover:text-orange-400'
+                ? 'bg-violet-900/30 border-violet-700/60 text-violet-400'
+                : 'bg-[#1a1a1a] border-[#2a2a2a] text-gray-500 hover:border-violet-700/60 hover:text-violet-400'
             }`}
           >
             {isSwapped ? `↩ Back: ${exercise.name}` : `↔ Sub: ${subName}`}
@@ -140,7 +140,7 @@ export default function ExerciseCard({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Sets</span>
                   {!allDone && (
-                    <span className="text-[10px] font-bold text-orange-400">
+                    <span className="text-[10px] font-bold text-violet-400">
                       → Set {currentSetIndex + 1} of {numSets}
                     </span>
                   )}
@@ -167,20 +167,20 @@ export default function ExerciseCard({
           <div className="flex gap-2 mt-2">
             <button
               onClick={() => onOpenOrm(exercise)}
-              className="text-[10px] text-gray-600 hover:text-orange-400 transition-colors flex items-center gap-1"
+              className="text-[10px] text-gray-600 hover:text-violet-400 transition-colors flex items-center gap-1"
             >
               🏋️ 1RM calc
             </button>
             <button
               onClick={() => onOpenPlates(exercise)}
-              className="text-[10px] text-gray-600 hover:text-orange-400 transition-colors flex items-center gap-1"
+              className="text-[10px] text-gray-600 hover:text-violet-400 transition-colors flex items-center gap-1"
             >
               🍽️ plates
             </button>
             {exercise.restSeconds > 0 && (
               <button
                 onClick={() => setShowWarmup(true)}
-                className="text-[10px] text-gray-600 hover:text-orange-400 transition-colors flex items-center gap-1"
+                className="text-[10px] text-gray-600 hover:text-violet-400 transition-colors flex items-center gap-1"
               >
                 🔥 warm-up
               </button>
