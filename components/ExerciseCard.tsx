@@ -5,6 +5,7 @@ import { useProgress } from '@/lib/useProgress'
 import SetRow from './SetRow'
 import PrCelebration from './PrCelebration'
 import WarmupCalc from './WarmupCalc'
+import ExerciseDemo from './ExerciseDemo'
 
 interface Props {
   exercise: Exercise
@@ -53,6 +54,7 @@ export default function ExerciseCard({
 }: Props) {
   const [expanded, setExpanded] = useState(true)
   const [showWarmup, setShowWarmup] = useState(false)
+  const [showDemo, setShowDemo] = useState(false)
   const [prWeight, setPrWeight] = useState<number | null>(null)
 
   const { prWeight: historicPR } = useProgress(activeName, allLogs)
@@ -82,6 +84,9 @@ export default function ExerciseCard({
       )}
       {showWarmup && (
         <WarmupCalc defaultWeight={lastWeight} onClose={() => setShowWarmup(false)} />
+      )}
+      {showDemo && (
+        <ExerciseDemo name={activeName} cleanNote={cleanNote} onClose={() => setShowDemo(false)} />
       )}
 
       <button
@@ -165,6 +170,12 @@ export default function ExerciseCard({
             )
           })()}
           <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => setShowDemo(true)}
+              className="text-[10px] text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1 font-semibold"
+            >
+              ▶ demo
+            </button>
             <button
               onClick={() => onOpenOrm(exercise)}
               className="text-[10px] text-gray-600 hover:text-violet-400 transition-colors flex items-center gap-1"
