@@ -6,6 +6,7 @@ import { useProgress } from '@/lib/useProgress'
 import { useSubstitutions } from '@/lib/useSubstitutions'
 import PrCelebration from './PrCelebration'
 import DrumPicker from './DrumPicker'
+import ExerciseDemo from './ExerciseDemo'
 
 const WEIGHTS = Array.from({ length: 81 }, (_, i) => String(Math.round(i * 2.5 * 10) / 10))
 const REPS = Array.from({ length: 30 }, (_, i) => String(i + 1))
@@ -118,6 +119,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
   const [setIdx, setSetIdx] = useState(0)
   const [resting, setResting] = useState(false)
   const [done, setDone] = useState(false)
+  const [showDemo, setShowDemo] = useState(false)
   const [note, setNote] = useState(todayLog?.sessionNote ?? '')
   const [prWeight, setPrWeight] = useState<number | null>(null)
 
@@ -231,6 +233,9 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
       {prWeight !== null && (
         <PrCelebration weight={prWeight} onDismiss={() => setPrWeight(null)} />
       )}
+      {showDemo && (
+        <ExerciseDemo name={activeName} cleanNote={cleanNote} onClose={() => setShowDemo(false)} />
+      )}
 
       {/* Top bar */}
       <div className="px-4 pt-4 pb-3 border-b border-[#1e1e1e]">
@@ -289,7 +294,15 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
             <p className="text-[11px] text-gray-600 mb-1">
               Exercise {exIdx + 1} of {exercises.length}
             </p>
-            <h2 className="text-2xl font-black text-white leading-tight">{activeName}</h2>
+            <div className="flex items-start justify-between gap-2">
+              <h2 className="text-2xl font-black text-white leading-tight flex-1">{activeName}</h2>
+              <button
+                onClick={() => setShowDemo(true)}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#12002a] border border-violet-900/60 text-violet-400 text-[10px] font-bold active:bg-violet-900/40 transition-colors shrink-0 mt-1"
+              >
+                ▶ demo
+              </button>
+            </div>
             {cleanNote && <p className="text-[12px] text-gray-500 mt-1">{cleanNote}</p>}
             {subName && (
               <button
