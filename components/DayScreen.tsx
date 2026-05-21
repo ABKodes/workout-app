@@ -12,6 +12,7 @@ import RestTimer from './RestTimer'
 import OneRMCalc from './OneRMCalc'
 import PlateCalc from './PlateCalc'
 import GuidedSession from './GuidedSession'
+import ExerciseDemo from './ExerciseDemo'
 
 interface Props {
   day: Day
@@ -31,6 +32,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null)
   const [ormExercise, setOrmExercise] = useState<Exercise | null>(null)
   const [platesExercise, setPlatesExercise] = useState<Exercise | null>(null)
+  const [demoExercise, setDemoExercise] = useState<{ name: string; note: string } | null>(null)
   const [finished, setFinished] = useState(false)
   const [guided, setGuided] = useState(false)
 
@@ -145,12 +147,22 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
                 <span>Duration</span>
               </div>
               {section.rows.map((ex, ei) => (
-                <div key={ei} className="grid grid-cols-[1fr_auto] gap-4 px-4 py-3 border-b border-[#1e1e1e] last:border-0">
-                  <div>
-                    <div className="text-[13px] font-bold text-white leading-snug">{ex.name}</div>
-                    <div className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{ex.note}</div>
+                <div key={ei} className="px-4 py-3 border-b border-[#1e1e1e] last:border-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[13px] font-bold text-white leading-snug">{ex.name}</div>
+                      <div className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{ex.note}</div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 pt-0.5">
+                      <button
+                        onClick={() => setDemoExercise({ name: ex.name, note: ex.note })}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#12002a] border border-violet-900/60 text-violet-400 text-[10px] font-bold active:bg-violet-900/40 transition-colors"
+                      >
+                        ▶ demo
+                      </button>
+                      <span className="text-[11px] text-gray-500 font-medium whitespace-nowrap">{ex.reps}</span>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-gray-500 font-medium whitespace-nowrap pt-0.5">{ex.reps}</div>
                 </div>
               ))}
             </div>
@@ -204,6 +216,9 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
       )}
       {ormExercise && <OneRMCalc onClose={() => setOrmExercise(null)} />}
       {platesExercise && <PlateCalc onClose={() => setPlatesExercise(null)} />}
+      {demoExercise && (
+        <ExerciseDemo name={demoExercise.name} cleanNote={demoExercise.note} onClose={() => setDemoExercise(null)} />
+      )}
     </div>
   )
 }
