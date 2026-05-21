@@ -43,7 +43,7 @@ function AppContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0d0d0d]">
+    <main className="bg-[#0d0d0d] overflow-y-auto" style={{ height: '100svh' }}>
       <SyncIndicator syncing={syncing} offline={offline} />
       <div className="max-w-lg mx-auto px-4 pt-6">
         {showStats
