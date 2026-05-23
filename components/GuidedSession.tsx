@@ -4,6 +4,8 @@ import { Day, Exercise, ExerciseLog, SessionLog, SetLog } from '@/types'
 import { useTimer } from '@/lib/useTimer'
 import { useProgress } from '@/lib/useProgress'
 import { useSubstitutions } from '@/lib/useSubstitutions'
+import { useBodyWeight } from '@/lib/useBodyWeight'
+import { getStartingWeight, getProgressionSuggestion } from '@/lib/suggestions'
 import PrCelebration from './PrCelebration'
 import DrumPicker from './DrumPicker'
 import ExerciseDemo from './ExerciseDemo'
@@ -112,6 +114,23 @@ function PRDetector({ exerciseName, weight, allLogs }: {
 export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLogs, onLogSet, onSetNote, onFinish, onExit }: Props) {
   const exercises = day.sections.flatMap(s => s.rows).filter(e => parseInt(e.sets) > 0)
   const { getActiveName, isSwapped, toggleSwap } = useSubstitutions(dayIndex)
+  const { entries: bwEntries } = useBodyWeight()
+
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const latestBW = bwEntries.length > 0 ? bwEntries[bwEntries.length - 1].weight : null
+
+  const getSuggestionWeight = useCallback((name: string, reps: string): string => {
+    const hasHistory = allLogs.some(l => l.date !== todayStr && l.exercises[name]?.sets.some(s => s.done))
+    if (hasHistory) {
+      const prog = getProgressionSuggestion(name, allLogs, reps, todayStr)
+      if (prog) return String(prog.weight)
+    } else if (latestBW !== null) {
+      const sw = getStartingWeight(name, latestBW)
+      if (sw !== null) return String(sw)
+    }
+    return '20'
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestBW])
 
   const totalSets = exercises.reduce((sum, e) => sum + parseInt(e.sets), 0)
 
@@ -138,8 +157,21 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
   const sameLabel = currentPrevSet?.done ? `S${setIdx}` : 'Last time'
 
   const [localWeight, setLocalWeight] = useState(
-    currentSet?.weight ?? sameSource?.weight ?? '20'
+    currentSet?.weight ?? sameSource?.weight ?? getSuggestionWeight(activeName, ex?.reps ?? '8')
   )
+
+  // Suggestion badge for the current exercise (hides once any set is logged today)
+  const anySetDoneToday = exLog?.sets.some(s => s.done) ?? false
+  const suggBadge = (() => {
+    if (anySetDoneToday) return null
+    const hasHistory = allLogs.some(l => l.date !== todayStr && l.exercises[activeName]?.sets.some(s => s.done))
+    if (hasHistory) {
+      const prog = getProgressionSuggestion(activeName, allLogs, ex?.reps ?? '8', todayStr)
+      return prog?.badge === 'up' ? 'up' : prog?.badge === 'same' ? 'same' : null
+    }
+    if (latestBW !== null && getStartingWeight(activeName, latestBW) !== null) return 'start'
+    return null
+  })()
   const [localReps, setLocalReps] = useState(
     currentSet?.reps ?? sameSource?.reps ?? defaultReps(ex?.reps ?? '8')
   )
@@ -174,12 +206,12 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
       const nextPrevLog = prevLog?.exercises[nextActiveName]
       setExIdx(i => i + 1)
       setSetIdx(0)
-      setLocalWeight(nextExLog?.sets[0]?.weight ?? nextPrevLog?.sets[0]?.weight ?? '20')
+      setLocalWeight(nextExLog?.sets[0]?.weight ?? nextPrevLog?.sets[0]?.weight ?? getSuggestionWeight(nextActiveName, nextEx.reps))
       setLocalReps(nextExLog?.sets[0]?.reps ?? nextPrevLog?.sets[0]?.reps ?? defaultReps(nextEx.reps))
     } else {
       setDone(true)
     }
-  }, [setIdx, numSets, exIdx, exercises, exLog, prevExLog, todayLog, prevLog, localWeight, ex, getActiveName])
+  }, [setIdx, numSets, exIdx, exercises, exLog, prevExLog, todayLog, prevLog, localWeight, ex, getActiveName, getSuggestionWeight])
 
   const handleDone = useCallback(() => {
     onLogSet(activeName, setIdx, { weight: localWeight, reps: localReps, done: true })
@@ -303,6 +335,15 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
                 ▶ demo
               </button>
             </div>
+            {suggBadge === 'up' && (
+              <span className="mt-1 inline-block text-[9px] px-2 py-0.5 rounded-full bg-[#0a2a12] text-green-400 border border-green-900 font-bold">↑ +2.5kg</span>
+            )}
+            {suggBadge === 'same' && (
+              <span className="mt-1 inline-block text-[9px] px-2 py-0.5 rounded-full bg-[#1a1a1a] text-gray-500 border border-[#2a2a2a] font-bold">→ same weight</span>
+            )}
+            {suggBadge === 'start' && (
+              <span className="mt-1 inline-block text-[9px] px-2 py-0.5 rounded-full bg-[#12002a] text-violet-400 border border-violet-900 font-bold">💡 suggested</span>
+            )}
             {cleanNote && <p className="text-[12px] text-gray-500 mt-1">{cleanNote}</p>}
             {subName && (
               <button

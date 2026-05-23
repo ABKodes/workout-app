@@ -9,6 +9,7 @@ interface Props {
   prevSet: SetLog | undefined
   currentPrevSet: SetLog | undefined
   isActive: boolean
+  suggestionWeight?: string
   onUpdate: (data: Partial<SetLog>) => void
   onDone: () => void
 }
@@ -29,14 +30,14 @@ function nearest(values: string[], val: string): string {
   return values.reduce((best, v) => Math.abs(parseFloat(v) - n) < Math.abs(parseFloat(best) - n) ? v : best)
 }
 
-export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPrevSet, isActive, onUpdate, onDone }: Props) {
+export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPrevSet, isActive, suggestionWeight, onUpdate, onDone }: Props) {
   const done = setLog?.done ?? false
 
   // Source for "same as" — prefer current session's previous set if it's done
   const sameSource = currentPrevSet?.done ? currentPrevSet : (prevSet ?? null)
   const sameLabel = currentPrevSet?.done ? `S${setIndex}` : 'Last time'
 
-  const weight = nearest(WEIGHTS, setLog?.weight ?? sameSource?.weight ?? '20')
+  const weight = nearest(WEIGHTS, setLog?.weight ?? suggestionWeight ?? sameSource?.weight ?? '20')
   const reps = nearest(REPS, setLog?.reps ?? sameSource?.reps ?? defaultReps(exercise.reps))
 
   const handleDone = () => {

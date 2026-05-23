@@ -36,12 +36,11 @@ async function upsertEntry(entry: BodyWeightEntry, userId: string) {
 }
 
 export function useBodyWeight() {
-  const [entries, setEntries] = useState<BodyWeightEntry[]>([])
+  const [entries, setEntries] = useState<BodyWeightEntry[]>(() => load())
   const [syncing, setSyncing] = useState(false)
   const userIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    setEntries(load())
     getUserId().then(id => { userIdRef.current = id })
 
     const handleOnline = () => syncPending()

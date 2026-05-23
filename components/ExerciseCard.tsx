@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import { Exercise, ExerciseLog, SessionLog } from '@/types'
 import { useProgress } from '@/lib/useProgress'
+import { useBodyWeight } from '@/lib/useBodyWeight'
+import { getStartingWeight, getProgressionSuggestion } from '@/lib/suggestions'
 import SetRow from './SetRow'
 import PrCelebration from './PrCelebration'
 import WarmupCalc from './WarmupCalc'
@@ -58,10 +60,35 @@ export default function ExerciseCard({
   const [prWeight, setPrWeight] = useState<number | null>(null)
 
   const { prWeight: historicPR } = useProgress(activeName, allLogs)
+  const { entries: bwEntries } = useBodyWeight()
   const numSets = setCount(exercise.sets)
   const isLoggable = numSets > 0
 
   const { cleanNote, subName } = parseNote(exercise.note)
+
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const latestBW = bwEntries.length > 0 ? bwEntries[bwEntries.length - 1].weight : null
+  const hasHistory = allLogs.some(l => l.date !== todayStr && l.exercises[activeName]?.sets.some(s => s.done))
+
+  let suggestionWeight: string | undefined
+  let suggestionBadge: 'up' | 'same' | 'start' | null = null
+
+  if (hasHistory) {
+    const prog = getProgressionSuggestion(activeName, allLogs, exercise.reps, todayStr)
+    if (prog) {
+      suggestionWeight = String(prog.weight)
+      suggestionBadge = prog.badge === 'up' ? 'up' : prog.badge === 'same' ? 'same' : null
+    }
+  } else if (latestBW !== null) {
+    const sw = getStartingWeight(activeName, latestBW)
+    if (sw !== null) {
+      suggestionWeight = String(sw)
+      suggestionBadge = 'start'
+    }
+  }
+
+  const firstSetDone = todayLog?.sets.some(s => s.done) ?? false
+  const showBadge = !firstSetDone && suggestionBadge !== null
 
   const handleSetUpdate = (setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => {
     if (data.weight !== undefined) {
@@ -95,7 +122,16 @@ export default function ExerciseCard({
           <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpanded(e => !e)}>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[13px] font-bold text-white leading-snug">{activeName}</span>
-              <OverloadBadge today={todayLog} prev={prevLog} />
+              {showBadge && suggestionBadge === 'up' && (
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#0a2a12] text-green-400 border border-green-900 font-bold">↑ +2.5kg</span>
+              )}
+              {showBadge && suggestionBadge === 'same' && (
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#1a1a1a] text-gray-500 border border-[#2a2a2a] font-bold">→ same weight</span>
+              )}
+              {showBadge && suggestionBadge === 'start' && (
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-[#12002a] text-violet-400 border border-violet-900 font-bold">💡 suggested</span>
+              )}
+              {!showBadge && <OverloadBadge today={todayLog} prev={prevLog} />}
             </div>
             <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{cleanNote}</p>
           </div>
@@ -170,6 +206,7 @@ export default function ExerciseCard({
                     prevSet={prevLog?.sets[i]}
                     currentPrevSet={i > 0 ? todayLog?.sets[i - 1] : undefined}
                     isActive={i === currentSetIndex}
+                    suggestionWeight={suggestionWeight}
                     onUpdate={data => handleSetUpdate(i, data)}
                     onDone={() => onSetDone(exercise.restSeconds)}
                   />
