@@ -1,11 +1,12 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Day, Exercise, ExerciseLog, SessionLog, SetLog } from '@/types'
 import { useTimer } from '@/lib/useTimer'
 import { useProgress } from '@/lib/useProgress'
 import { useSubstitutions } from '@/lib/useSubstitutions'
 import { useBodyWeight } from '@/lib/useBodyWeight'
 import { getStartingWeight, getProgressionSuggestion } from '@/lib/suggestions'
+import { getCue } from '@/lib/cues'
 import PrCelebration from './PrCelebration'
 import DrumPicker from './DrumPicker'
 import ExerciseDemo from './ExerciseDemo'
@@ -47,10 +48,12 @@ function parseNote(note: string): { cleanNote: string; subName: string | null } 
   return { cleanNote: note, subName: null }
 }
 
-function RestCountdown({ seconds, onDone, nextLabel }: {
+function RestCountdown({ seconds, onDone, nextLabel, cue, setsLeft }: {
   seconds: number
   onDone: () => void
   nextLabel: string
+  cue: string | null
+  setsLeft: number
 }) {
   const { fmt, running, start, skip, addTime } = useTimer()
 
@@ -62,9 +65,18 @@ function RestCountdown({ seconds, onDone, nextLabel }: {
   const remaining = parseInt(fmt.split(':')[0]) * 60 + parseInt(fmt.split(':')[1])
   const progress = seconds > 0 ? (seconds - remaining) / seconds : 1
 
+  const setsLeftLabel = setsLeft === 0
+    ? 'Last set — finish strong!'
+    : setsLeft === 1
+    ? '1 more set on this exercise'
+    : `${setsLeft} more sets on this exercise`
+
   return (
     <div className="flex flex-col items-center flex-1 justify-center gap-4">
       <p className="text-[11px] text-gray-600 uppercase tracking-widest font-bold">Rest</p>
+      {cue && (
+        <p className="text-[12px] text-gray-500 italic text-center px-6 leading-relaxed">{cue}</p>
+      )}
       <div className="relative">
         <svg width="108" height="108" className="-rotate-90">
           <circle cx="54" cy="54" r="44" fill="none" stroke="#1e1e1e" strokeWidth="6" />
@@ -82,6 +94,7 @@ function RestCountdown({ seconds, onDone, nextLabel }: {
         </div>
       </div>
       <p className="text-[11px] text-gray-500">Next: {nextLabel}</p>
+      <p className="text-[10px] text-gray-600 font-semibold">{setsLeftLabel}</p>
       <div className="flex gap-3">
         <button
           onClick={() => addTime(30)}
@@ -141,6 +154,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
   const [showDemo, setShowDemo] = useState(false)
   const [note, setNote] = useState(todayLog?.sessionNote ?? '')
   const [prWeight, setPrWeight] = useState<number | null>(null)
+  const [showCleanSet, setShowCleanSet] = useState(false)
 
   const ex: Exercise = exercises[exIdx]
   const numSets = ex ? parseInt(ex.sets) : 0
@@ -213,17 +227,29 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
     }
   }, [setIdx, numSets, exIdx, exercises, exLog, prevExLog, todayLog, prevLog, localWeight, ex, getActiveName, getSuggestionWeight])
 
+  useEffect(() => {
+    if (!showCleanSet) return
+    const t = setTimeout(() => setShowCleanSet(false), 2500)
+    return () => clearTimeout(t)
+  }, [showCleanSet])
+
   const handleDone = useCallback(() => {
     onLogSet(activeName, setIdx, { weight: localWeight, reps: localReps, done: true })
 
-    // PR check
+    // PR check — if PR fires, skip clean set toast
     const allExLogs = allLogs.flatMap(l => {
       const el = l.exercises[activeName]
       return el ? el.sets.filter(s => s.done && s.weight !== '').map(s => parseFloat(s.weight)) : []
     }).filter(w => !isNaN(w))
     const histMax = allExLogs.length > 0 ? Math.max(...allExLogs) : 0
     const newW = parseFloat(localWeight)
-    if (!isNaN(newW) && newW > histMax && histMax > 0) setPrWeight(newW)
+    const isPR = !isNaN(newW) && newW > histMax && histMax > 0
+    if (isPR) setPrWeight(newW)
+
+    // Clean set toast — fires when all reps hit top of range and no PR
+    if (!isPR && parseInt(localReps) >= upperReps(ex.reps)) {
+      setShowCleanSet(true)
+    }
 
     if (ex.restSeconds > 0) setResting(true)
     else advanceNext()
@@ -316,7 +342,13 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
       ) : resting ? (
         /* Rest timer */
         <div className="flex-1 flex flex-col px-4 py-6">
-          <RestCountdown seconds={ex.restSeconds} onDone={advanceNext} nextLabel={nextLabel()} />
+          <RestCountdown
+            seconds={ex.restSeconds}
+            onDone={advanceNext}
+            nextLabel={nextLabel()}
+            cue={getCue(activeName)}
+            setsLeft={numSets - setIdx - 1}
+          />
         </div>
       ) : (
         /* Active set */
@@ -419,6 +451,14 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
           >
             ✓ Done — start rest timer
           </button>
+
+          {showCleanSet && (
+            <div className="flex justify-center mt-3">
+              <span className="text-[12px] font-bold text-green-400 bg-[#0a2a12] border border-green-900 rounded-full px-4 py-2">
+                Clean set — +2.5kg next session 💪
+              </span>
+            </div>
+          )}
 
           <p className="text-center text-[11px] text-gray-600 mt-3">After rest: {nextLabel()}</p>
         </div>

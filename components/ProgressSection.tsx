@@ -213,6 +213,61 @@ function SummaryCard({ allLogs, gymExerciseNames }: { allLogs: SessionLog[]; gym
   )
 }
 
+function StrengthGainsCard({ allLogs, gymExerciseNames }: { allLogs: SessionLog[]; gymExerciseNames: string[] }) {
+  const gains = useMemo(() => {
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() - 28)
+    const cutoffStr = cutoff.toISOString().slice(0, 10)
+
+    const results: { name: string; pct: number; thenBest: number; nowBest: number }[] = []
+
+    for (const name of gymExerciseNames) {
+      let thenBest = 0
+      let nowBest = 0
+
+      for (const log of allLogs) {
+        const exLog = log.exercises[name]
+        if (!exLog) continue
+        const weights = exLog.sets
+          .filter(s => s.done && s.weight !== '')
+          .map(s => parseFloat(s.weight))
+          .filter(w => !isNaN(w))
+        if (weights.length === 0) continue
+        const max = Math.max(...weights)
+        if (log.date <= cutoffStr) {
+          if (max > thenBest) thenBest = max
+        } else {
+          if (max > nowBest) nowBest = max
+        }
+      }
+
+      if (thenBest > 0 && nowBest > 0) {
+        const pct = Math.round(((nowBest - thenBest) / thenBest) * 100)
+        if (pct > 0) results.push({ name, pct, thenBest, nowBest })
+      }
+    }
+
+    return results.sort((a, b) => b.pct - a.pct).slice(0, 3)
+  }, [allLogs, gymExerciseNames])
+
+  if (gains.length === 0) return null
+
+  return (
+    <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4 mb-5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-3">Strength Gains · Last 4 Weeks</p>
+      <div className="space-y-3">
+        {gains.map(g => (
+          <div key={g.name} className="flex items-center gap-3">
+            <p className="text-[12px] font-bold text-white flex-1 truncate">{g.name}</p>
+            <span className="text-[12px] font-black text-green-400 shrink-0">↑ {g.pct}%</span>
+            <span className="text-[10px] text-gray-500 shrink-0">{g.thenBest} → {g.nowBest}kg</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function ProgressSection({ allLogs, activeDayIndex }: Props) {
   const [openExercise, setOpenExercise] = useState<string | null>(null)
 
@@ -238,6 +293,7 @@ export default function ProgressSection({ allLogs, activeDayIndex }: Props) {
     <div>
       <h2 className="text-lg font-black text-white mb-4">Strength Progress</h2>
       <SummaryCard allLogs={allLogs} gymExerciseNames={gymExerciseNames} />
+      <StrengthGainsCard allLogs={allLogs} gymExerciseNames={gymExerciseNames} />
       <div className="bg-[#111] rounded-xl border border-[#1e1e1e] overflow-hidden">
         <div className="px-4 py-2 border-b border-[#1e1e1e]">
           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">All exercises</p>
