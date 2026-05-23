@@ -1,4 +1,5 @@
 'use client'
+import { useExerciseGif } from '@/lib/useExerciseGif'
 
 interface Props {
   name: string
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
+  const { gifUrl, loading } = useExerciseGif(name)
   const query = encodeURIComponent(name + ' exercise form tutorial')
   const ytUrl = `https://www.youtube.com/results?search_query=${query}`
 
@@ -18,27 +20,50 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
-        <div className="w-10 h-1 bg-[#333] rounded-full mx-auto mb-6" />
+        <div className="w-10 h-1 bg-[#333] rounded-full mx-auto mb-4" />
 
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo</p>
         <h3 className="text-white font-black text-[16px] leading-snug mb-3">{name}</h3>
 
+        {/* GIF area */}
+        <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4" style={{ minHeight: 200 }}>
+          {loading && (
+            <div className="flex items-center justify-center" style={{ height: 200 }}>
+              <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          {!loading && gifUrl && (
+            <img
+              src={gifUrl}
+              alt={`${name} demonstration`}
+              className="w-full object-contain"
+              style={{ maxHeight: 280 }}
+            />
+          )}
+          {!loading && !gifUrl && (
+            <div className="flex flex-col items-center justify-center gap-2 text-gray-600" style={{ height: 200 }}>
+              <span className="text-3xl">🎬</span>
+              <p className="text-[11px]">No preview available</p>
+            </div>
+          )}
+        </div>
+
         {cleanNote && (
-          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl px-4 py-3 mb-5">
+          <div className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl px-4 py-3 mb-4">
             <p className="text-[12px] text-gray-400 leading-relaxed">{cleanNote}</p>
           </div>
         )}
 
+        {/* YouTube fallback — always shown */}
         <a
           href={ytUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2.5 w-full py-3.5 bg-[#12002a] border border-violet-900 text-violet-400 font-black text-sm rounded-xl active:bg-violet-900/40 transition-colors"
+          className="flex items-center justify-center gap-2.5 w-full py-3 bg-[#0d0d0d] border border-[#2a2a2a] text-gray-500 font-bold text-[12px] rounded-xl active:bg-[#1a1a1a] transition-colors"
         >
-          <span className="text-base">▶</span>
-          Watch form tutorial on YouTube
+          <span className="text-sm">▶</span>
+          Watch full tutorial on YouTube
         </a>
-        <p className="text-center text-[10px] text-gray-700 mt-3">Opens YouTube search · tap back to return</p>
       </div>
     </div>
   )
