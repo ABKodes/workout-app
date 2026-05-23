@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 
-// Maps app exercise names to ExerciseDB search terms
 const SEARCH_TERMS: Record<string, string> = {
   'DB Lateral Raise': 'dumbbell lateral raise',
   'Low Incline DB Press': 'incline dumbbell press',
@@ -27,9 +26,10 @@ const SEARCH_TERMS: Record<string, string> = {
   'Broad Jumps': 'broad jump',
 }
 
-const CACHE_KEY = 'exercise_gif_cache_v1'
+// Cache only successful GIF URLs — failures are not cached so they retry next time
+const CACHE_KEY = 'exercise_gif_cache_v2'
 
-function loadCache(): Record<string, string | null> {
+function loadCache(): Record<string, string> {
   if (typeof window === 'undefined') return {}
   try {
     return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}')
@@ -38,11 +38,15 @@ function loadCache(): Record<string, string | null> {
   }
 }
 
-function saveToCache(name: string, url: string | null) {
+function saveToCache(name: string, url: string) {
   const cache = loadCache()
   cache[name] = url
   localStorage.setItem(CACHE_KEY, JSON.stringify(cache))
 }
+
+const API_KEY =
+  process.env.NEXT_PUBLIC_EXERCISEDB_KEY ||
+  'b7629b5a5fmsh82d82132230f00fp156e5djsn6396dd2e7ea2'
 
 export function useExerciseGif(exerciseName: string) {
   const [gifUrl, setGifUrl] = useState<string | null | undefined>(undefined)
@@ -55,16 +59,10 @@ export function useExerciseGif(exerciseName: string) {
       return
     }
 
-    // Check cache first
+    // Return cached URL immediately if we have one
     const cache = loadCache()
-    if (exerciseName in cache) {
+    if (cache[exerciseName]) {
       setGifUrl(cache[exerciseName])
-      return
-    }
-
-    const key = process.env.NEXT_PUBLIC_EXERCISEDB_KEY
-    if (!key) {
-      setGifUrl(null)
       return
     }
 
@@ -73,7 +71,7 @@ export function useExerciseGif(exerciseName: string) {
       `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(searchTerm)}?limit=1&offset=0`,
       {
         headers: {
-          'x-rapidapi-key': key,
+          'x-rapidapi-key': API_KEY,
           'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
         },
       }
@@ -81,13 +79,10 @@ export function useExerciseGif(exerciseName: string) {
       .then(r => r.json())
       .then((data: { gifUrl?: string }[]) => {
         const url = data?.[0]?.gifUrl ?? null
-        saveToCache(exerciseName, url)
+        if (url) saveToCache(exerciseName, url)
         setGifUrl(url)
       })
-      .catch(() => {
-        saveToCache(exerciseName, null)
-        setGifUrl(null)
-      })
+      .catch(() => setGifUrl(null))
       .finally(() => setLoading(false))
   }, [exerciseName])
 
