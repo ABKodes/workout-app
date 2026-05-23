@@ -8,7 +8,7 @@ interface Props {
 }
 
 export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
-  const { gifUrl, loading } = useExerciseGif(name)
+  const { gifUrl, loading, onError } = useExerciseGif(name)
   const query = encodeURIComponent(name + ' exercise form tutorial')
   const ytUrl = `https://www.youtube.com/results?search_query=${query}`
 
@@ -25,7 +25,7 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo</p>
         <h3 className="text-white font-black text-[16px] leading-snug mb-3">{name}</h3>
 
-        {/* GIF area */}
+        {/* Image area */}
         <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4" style={{ minHeight: 200 }}>
           {loading && (
             <div className="flex items-center justify-center" style={{ height: 200 }}>
@@ -38,6 +38,7 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
               alt={`${name} demonstration`}
               className="w-full object-contain"
               style={{ maxHeight: 280 }}
+              onError={onError}
             />
           )}
           {!loading && !gifUrl && (
