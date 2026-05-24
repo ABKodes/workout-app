@@ -1,6 +1,18 @@
 'use client'
 import { useExerciseGif } from '@/lib/useExerciseGif'
 
+// Confirmed Jeff Nippard YouTube tutorial video IDs
+const JEFF_VIDEOS: Record<string, string> = {
+  'DB RDL': 'Q5vwsJFwhyg',
+  'Helms Row': 'djKXLt7kv7Q',
+  'Close-Grip Assisted Dip': 'TOgUqAurYNk',
+  'Hammer Curl': 'GNO4OtYoCYk',
+  'Standing Calf Raise': '21inrjhoFkQ',
+  'Nordic Ham Curl': 'jNC3aYBHL1I',
+  'DB Flye w/ Integrated Partials': 'sNoYUpivUfY',
+  'DB Skull Crusher': 'popGXI-qs98',
+}
+
 interface Props {
   name: string
   cleanNote: string
@@ -8,8 +20,9 @@ interface Props {
 }
 
 export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
+  const videoId = JEFF_VIDEOS[name]
   const { gifUrl, loading, onError } = useExerciseGif(name)
-  const query = encodeURIComponent(name + ' exercise form tutorial')
+  const query = encodeURIComponent('jeff nippard ' + name + ' tutorial')
   const ytUrl = `https://www.youtube.com/results?search_query=${query}`
 
   return (
@@ -25,27 +38,39 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
         <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo</p>
         <h3 className="text-white font-black text-[16px] leading-snug mb-3">{name}</h3>
 
-        {/* Image area */}
-        <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4" style={{ minHeight: 200 }}>
-          {loading && (
-            <div className="flex items-center justify-center" style={{ height: 200 }}>
-              <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-          {!loading && gifUrl && (
-            <img
-              src={gifUrl}
-              alt={`${name} demonstration`}
-              className="w-full object-contain"
-              style={{ maxHeight: 280 }}
-              onError={onError}
+        {/* Video / GIF area */}
+        <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4">
+          {videoId ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&playsinline=1`}
+              className="w-full"
+              style={{ height: 210 }}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
             />
-          )}
-          {!loading && !gifUrl && (
-            <div className="flex flex-col items-center justify-center gap-2 text-gray-600" style={{ height: 200 }}>
-              <span className="text-3xl">🎬</span>
-              <p className="text-[11px]">No preview available</p>
-            </div>
+          ) : (
+            <>
+              {loading && (
+                <div className="flex items-center justify-center" style={{ height: 200 }}>
+                  <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+              {!loading && gifUrl && (
+                <img
+                  src={gifUrl}
+                  alt={`${name} demonstration`}
+                  className="w-full object-contain"
+                  style={{ maxHeight: 280 }}
+                  onError={onError}
+                />
+              )}
+              {!loading && !gifUrl && (
+                <div className="flex flex-col items-center justify-center gap-2 text-gray-600" style={{ height: 200 }}>
+                  <span className="text-3xl">🎬</span>
+                  <p className="text-[11px]">No preview available</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -55,7 +80,7 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
           </div>
         )}
 
-        {/* YouTube fallback — always shown */}
+        {/* Jeff Nippard YouTube search — always shown */}
         <a
           href={ytUrl}
           target="_blank"
@@ -63,7 +88,7 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
           className="flex items-center justify-center gap-2.5 w-full py-3 bg-[#0d0d0d] border border-[#2a2a2a] text-gray-500 font-bold text-[12px] rounded-xl active:bg-[#1a1a1a] transition-colors"
         >
           <span className="text-sm">▶</span>
-          Watch full tutorial on YouTube
+          Search Jeff Nippard on YouTube
         </a>
       </div>
     </div>
