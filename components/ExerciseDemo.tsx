@@ -1,16 +1,22 @@
 'use client'
 import { useExerciseGif } from '@/lib/useExerciseGif'
 
-// Confirmed Jeff Nippard YouTube tutorial video IDs
-const JEFF_VIDEOS: Record<string, string> = {
-  'DB RDL': 'Q5vwsJFwhyg',
-  'Helms Row': 'djKXLt7kv7Q',
-  'Close-Grip Assisted Dip': 'TOgUqAurYNk',
-  'Hammer Curl': 'GNO4OtYoCYk',
-  'Standing Calf Raise': '21inrjhoFkQ',
-  'Nordic Ham Curl': 'jNC3aYBHL1I',
-  'DB Flye w/ Integrated Partials': 'sNoYUpivUfY',
-  'DB Skull Crusher': 'popGXI-qs98',
+// Jeff Nippard YouTube video IDs — full tutorials + Shorts from his own channel
+// Shorts are vertical (9:16); regular videos are landscape (16:9)
+const JEFF_VIDEOS: Record<string, { id: string; short: boolean }> = {
+  // Full tutorials (landscape)
+  'DB RDL':                        { id: 'Q5vwsJFwhyg', short: false },
+  'Helms Row':                     { id: 'djKXLt7kv7Q', short: false },
+  'Close-Grip Assisted Dip':       { id: 'TOgUqAurYNk', short: false },
+  'Hammer Curl':                   { id: 'GNO4OtYoCYk', short: false },
+  'Standing Calf Raise':           { id: '21inrjhoFkQ', short: false },
+  'Nordic Ham Curl':               { id: 'jNC3aYBHL1I', short: false },
+  'DB Flye w/ Integrated Partials':{ id: 'sNoYUpivUfY', short: false },
+  'DB Skull Crusher':              { id: 'popGXI-qs98', short: false },
+  // Shorts from Jeff Nippard's channel (@JeffNippard)
+  'DB Lateral Raise':              { id: 'OWAfHGmOf0A', short: true },  // Best Side Delt Exercise
+  'Low Incline DB Press':          { id: 'xGMqmmn5Z7Q', short: true },  // Best Incline for Upper Chest
+  'Bent-Over Reverse DB Flye':     { id: 'zEuseRjS7vg', short: true },  // Best Rear Delt Exercise
 }
 
 interface Props {
@@ -20,7 +26,7 @@ interface Props {
 }
 
 export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
-  const videoId = JEFF_VIDEOS[name]
+  const video = JEFF_VIDEOS[name]
   const { gifUrl, loading, onError } = useExerciseGif(name)
   const query = encodeURIComponent('jeff nippard ' + name + ' tutorial')
   const ytUrl = `https://www.youtube.com/results?search_query=${query}`
@@ -35,16 +41,16 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
         {/* Handle */}
         <div className="w-10 h-1 bg-[#333] rounded-full mx-auto mb-4" />
 
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo · Jeff Nippard</p>
         <h3 className="text-white font-black text-[16px] leading-snug mb-3">{name}</h3>
 
         {/* Video / GIF area */}
         <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4">
-          {videoId ? (
+          {video ? (
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?modestbranding=1&rel=0&playsinline=1`}
+              src={`https://www.youtube.com/embed/${video.id}?modestbranding=1&rel=0&playsinline=1`}
               className="w-full"
-              style={{ height: 210 }}
+              style={{ height: video.short ? 420 : 210 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
