@@ -1,9 +1,35 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+// GIPHY search terms — tuned to return clean exercise form videos
+const GIPHY_TERMS: Record<string, string> = {
+  'DB Lateral Raise': 'dumbbell lateral raise exercise',
+  'Low Incline DB Press': 'incline dumbbell press exercise',
+  'DB Flye w/ Integrated Partials': 'dumbbell fly chest exercise',
+  'DB Skull Crusher': 'skull crusher tricep exercise',
+  'Close-Grip Assisted Dip': 'tricep dips exercise',
+  'Plate-Weighted Crunch': 'weighted crunch ab exercise',
+  'Overhand Lat Pulldown': 'lat pulldown exercise',
+  'DB RDL': 'romanian deadlift exercise',
+  'Helms Row': 'dumbbell row back exercise',
+  'DB Lat Pullover': 'dumbbell pullover exercise',
+  'Hammer Curl': 'hammer curl exercise',
+  'Bent-Over Reverse DB Flye': 'reverse fly rear delt exercise',
+  'Hack Squat / Goblet Squat': 'goblet squat exercise',
+  'Standing Calf Raise': 'calf raise exercise',
+  'Nordic Ham Curl': 'nordic hamstring curl exercise',
+  'Copenhagen Hip Adduction': 'hip adduction exercise',
+  'Reverse Nordic': 'reverse nordic curl exercise',
+  'Depth Jumps': 'depth jump plyometric',
+  'Split Squat Jumps': 'split squat jump exercise',
+  'Box Jumps': 'box jump exercise',
+  'Single-Leg Lateral Hops': 'lateral hop exercise',
+  'Broad Jumps': 'broad jump exercise',
+}
+
+// Static fallback images — instant, no API needed (free-exercise-db)
 const BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises'
-
-const EXERCISE_IMAGES: Record<string, string> = {
+const STATIC_IMAGES: Record<string, string> = {
   'DB Lateral Raise': `${BASE}/Side_Lateral_Raise/0.jpg`,
   'Low Incline DB Press': `${BASE}/Incline_Dumbbell_Press/0.jpg`,
   'DB Flye w/ Integrated Partials': `${BASE}/Dumbbell_Flyes/0.jpg`,
@@ -26,12 +52,48 @@ const EXERCISE_IMAGES: Record<string, string> = {
   'Broad Jumps': `${BASE}/Depth_Jump_Leap/0.jpg`,
 }
 
+const CACHE_KEY = 'exercise_gif_giphy_v1'
+const GIPHY_KEY = process.env.NEXT_PUBLIC_GIPHY_KEY
+
+function loadCache(): Record<string, string> {
+  if (typeof window === 'undefined') return {}
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '{}') } catch { return {} }
+}
+function saveCache(name: string, url: string) {
+  const c = loadCache(); c[name] = url
+  localStorage.setItem(CACHE_KEY, JSON.stringify(c))
+}
+
 export function useExerciseGif(exerciseName: string) {
-  const url = EXERCISE_IMAGES[exerciseName] ?? null
-  const [failed, setFailed] = useState(false)
+  const staticUrl = STATIC_IMAGES[exerciseName] ?? null
+  const [gifUrl, setGifUrl] = useState<string | null>(staticUrl)
+  const [loading, setLoading] = useState(!!GIPHY_KEY && !!GIPHY_TERMS[exerciseName])
+  const [staticFailed, setStaticFailed] = useState(false)
+
+  useEffect(() => {
+    if (!GIPHY_KEY || !GIPHY_TERMS[exerciseName]) return
+
+    const cache = loadCache()
+    if (cache[exerciseName]) {
+      setGifUrl(cache[exerciseName])
+      setLoading(false)
+      return
+    }
+
+    const term = encodeURIComponent(GIPHY_TERMS[exerciseName])
+    fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_KEY}&q=${term}&limit=1&rating=g&lang=en`)
+      .then(r => r.json())
+      .then((d: { data?: { images?: { original?: { url?: string } } }[] }) => {
+        const url = d?.data?.[0]?.images?.original?.url ?? null
+        if (url) { saveCache(exerciseName, url); setGifUrl(url) }
+      })
+      .catch(() => {/* keep static image */})
+      .finally(() => setLoading(false))
+  }, [exerciseName])
+
   return {
-    gifUrl: (!url || failed) ? null : url,
-    loading: false,
-    onError: () => setFailed(true),
+    gifUrl: staticFailed ? null : gifUrl,
+    loading,
+    onError: () => { setStaticFailed(true); setGifUrl(null) },
   }
 }
