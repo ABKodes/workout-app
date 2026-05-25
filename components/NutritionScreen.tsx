@@ -3,18 +3,20 @@ import { useState } from 'react'
 import { nutrition } from '@/lib/data'
 import OneRMCalc from './OneRMCalc'
 import PlateCalc from './PlateCalc'
-import ProteinCalc from './ProteinCalc'
+import MacroSetup from './MacroSetup'
+import { useMacros } from '@/lib/useMacros'
 
 export default function NutritionScreen() {
   const [showOrm, setShowOrm] = useState(false)
   const [showPlates, setShowPlates] = useState(false)
+  const { macros, profile, saveProfile, weightKg } = useMacros()
 
-  const macros = [
-    { val: nutrition.calories, label: 'Calories', highlight: true },
-    { val: nutrition.protein, label: 'Protein', highlight: true },
-    { val: nutrition.carbs, label: 'Carbs', highlight: false },
-    { val: nutrition.fat, label: 'Fat', highlight: false },
-  ]
+  const macroItems = macros ? [
+    { val: macros.calories.toLocaleString(), label: 'Calories', unit: 'kcal', highlight: true },
+    { val: `${macros.protein}g`,             label: 'Protein',  unit: '2.0 g/kg', highlight: true },
+    { val: `${macros.carbs}g`,               label: 'Carbs',    unit: 'remainder', highlight: false },
+    { val: `${macros.fat}g`,                 label: 'Fat',      unit: '0.8 g/kg', highlight: false },
+  ] : null
 
   return (
     <div className="pb-28">
@@ -23,21 +25,40 @@ export default function NutritionScreen() {
 
       {/* Macros */}
       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Daily macros</p>
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        {macros.map(m => (
-          <div
-            key={m.label}
-            className={`rounded-xl p-4 text-center border ${
-              m.highlight
-                ? 'bg-[#12002a] border-violet-900/50'
-                : 'bg-[#111] border-[#1e1e1e]'
-            }`}
-          >
-            <div className={`text-2xl font-black ${m.highlight ? 'text-violet-400' : 'text-white'}`}>{m.val}</div>
-            <div className="text-[11px] text-gray-600 mt-1">{m.label}</div>
+
+      {!profile ? (
+        <MacroSetup onSave={saveProfile} />
+      ) : !weightKg ? (
+        <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4 mb-4 text-center">
+          <p className="text-[12px] text-gray-500 leading-relaxed">
+            Log your weight in the Stats tab to calculate your macros.
+          </p>
+        </div>
+      ) : macroItems ? (
+        <>
+          <div className="grid grid-cols-2 gap-2 mb-1">
+            {macroItems.map(m => (
+              <div
+                key={m.label}
+                className={`rounded-xl p-4 text-center border ${
+                  m.highlight
+                    ? 'bg-[#12002a] border-violet-900/50'
+                    : 'bg-[#111] border-[#1e1e1e]'
+                }`}
+              >
+                <div className={`text-2xl font-black ${m.highlight ? 'text-violet-400' : 'text-white'}`}>
+                  {m.val}
+                </div>
+                <div className="text-[11px] text-gray-600 mt-1">{m.label}</div>
+                <div className="text-[9px] text-gray-700 mt-0.5">{m.unit}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+          <p className="text-[10px] text-gray-700 text-right mb-4">
+            Based on {weightKg} kg · 20% deficit · TDEE ×0.80
+          </p>
+        </>
+      ) : null}
 
       {/* Tip */}
       <div className="border-l-[3px] border-violet-500 bg-[#111] rounded-r-xl px-4 py-3 text-sm text-gray-400 leading-relaxed mb-6">
@@ -48,12 +69,6 @@ export default function NutritionScreen() {
             </span>
           )
         )}
-      </div>
-
-      {/* Protein Calculator */}
-      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Protein target</p>
-      <div className="mb-6">
-        <ProteinCalc />
       </div>
 
       {/* Supplements */}
