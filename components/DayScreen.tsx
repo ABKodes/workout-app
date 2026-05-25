@@ -13,6 +13,7 @@ import OneRMCalc from './OneRMCalc'
 import PlateCalc from './PlateCalc'
 import GuidedSession from './GuidedSession'
 import ExerciseDemo from './ExerciseDemo'
+import QuickWeightLog from './QuickWeightLog'
 
 interface Props {
   day: Day
@@ -50,17 +51,46 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     setFinished(true)
   }
 
-  const progressTips = finished ? allExercises.flatMap(e => {
-    const activeName = getActiveName(e.name)
-    const log = todayLog?.exercises[activeName]
-    if (!log) return []
-    const upper = upperReps(e.reps)
-    const done = (log.sets || []).filter(s => s?.done)
-    if (done.length === 0 || !done.every(s => parseInt(s.reps) >= upper)) return []
-    const maxW = Math.max(...done.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
-    if (isNaN(maxW)) return []
-    return [`💡 ${e.name} — you hit all reps. Try ${maxW + 2.5}kg next session.`]
-  }) : []
+  // Session summary stats — computed once on finish
+  const sessionSummary = finished && todayLog ? (() => {
+    let totalVolume = 0
+    const prs: string[] = []
+    const progressTipsList: string[] = []
+
+    allExercises.forEach(e => {
+      const activeName = getActiveName(e.name)
+      const log = todayLog.exercises[activeName]
+      if (!log) return
+      const done = (log.sets || []).filter(s => s?.done)
+      if (done.length === 0) return
+
+      // Volume
+      done.forEach(s => {
+        const w = parseFloat(s.weight)
+        const r = parseInt(s.reps)
+        if (!isNaN(w) && !isNaN(r)) totalVolume += w * r
+      })
+
+      // PR detection — compare today's max weight vs all previous logs
+      const todayMax = Math.max(...done.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
+      const prevMax = allLogs
+        .filter(l => l.date !== todayLog.date && l.exercises[activeName])
+        .flatMap(l => (l.exercises[activeName].sets || []).filter(s => s?.done).map(s => parseFloat(s.weight)))
+        .filter(w => !isNaN(w))
+      const historicMax = prevMax.length > 0 ? Math.max(...prevMax) : 0
+      if (!isNaN(todayMax) && todayMax > historicMax && historicMax > 0) {
+        prs.push(`${activeName} — ${todayMax}kg`)
+      }
+
+      // Progression tips
+      const upper = upperReps(e.reps)
+      if (done.every(s => parseInt(s.reps) >= upper) && !isNaN(todayMax)) {
+        progressTipsList.push(`${activeName}: try ${todayMax + 2.5}kg next session`)
+      }
+    })
+
+    return { totalVolume: Math.round(totalVolume), prs, progressTipsList }
+  })() : null
 
   if (guided) {
     return (
@@ -110,6 +140,8 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
           </div>
         )}
       </div>
+
+      {isGym && <QuickWeightLog />}
 
       {dayIndex === 4 && <AlertBanner />}
 
@@ -189,16 +221,53 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
               ✓ Finish session
             </button>
           ) : (
-            <div>
-              <div className="mt-3 w-full py-3 bg-[#0a2a12] border border-green-900 text-green-400 font-bold text-sm rounded-xl text-center">
+            <div className="mt-3 space-y-3">
+              {/* Summary header */}
+              <div className="w-full py-3 bg-[#0a2a12] border border-green-900 text-green-400 font-bold text-sm rounded-xl text-center">
                 🔥 Session logged — great work!
               </div>
-              {progressTips.length > 0 && (
-                <div className="mt-3 bg-[#111] rounded-xl border border-[#1e1e1e] p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Progression tips</p>
+
+              {/* Stats row */}
+              {sessionSummary && (
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-3 text-center">
+                    <div className="text-lg font-black text-white">{doneCount}</div>
+                    <div className="text-[9px] text-gray-600 uppercase tracking-wider mt-0.5">exercises</div>
+                  </div>
+                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-3 text-center">
+                    <div className="text-lg font-black text-violet-400">
+                      {sessionSummary.totalVolume >= 1000
+                        ? `${(sessionSummary.totalVolume / 1000).toFixed(1)}t`
+                        : `${sessionSummary.totalVolume}kg`}
+                    </div>
+                    <div className="text-[9px] text-gray-600 uppercase tracking-wider mt-0.5">volume</div>
+                  </div>
+                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-3 text-center">
+                    <div className="text-lg font-black text-yellow-400">{sessionSummary.prs.length}</div>
+                    <div className="text-[9px] text-gray-600 uppercase tracking-wider mt-0.5">PRs</div>
+                  </div>
+                </div>
+              )}
+
+              {/* PRs hit */}
+              {sessionSummary && sessionSummary.prs.length > 0 && (
+                <div className="bg-[#1a1200] border border-yellow-900/50 rounded-xl p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-600 mb-2">New PRs</p>
+                  <div className="space-y-1">
+                    {sessionSummary.prs.map((pr, i) => (
+                      <p key={i} className="text-sm text-yellow-400 font-semibold">★ {pr}</p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Progression tips */}
+              {sessionSummary && sessionSummary.progressTipsList.length > 0 && (
+                <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Next session</p>
                   <div className="space-y-1.5">
-                    {progressTips.map((t, i) => (
-                      <p key={i} className="text-sm text-gray-300 leading-relaxed">{t}</p>
+                    {sessionSummary.progressTipsList.map((t, i) => (
+                      <p key={i} className="text-[12px] text-gray-400 leading-relaxed">💡 {t}</p>
                     ))}
                   </div>
                 </div>

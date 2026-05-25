@@ -87,12 +87,15 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
       </div>
 
       {sameSource && !done && (
-        <button
-          onClick={handleSameAs}
-          className="ml-6 text-[10px] text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-2.5 py-0.5 hover:bg-violet-900/40 transition-colors"
-        >
-          ↩ {sameLabel} · {sameSource.weight}kg × {sameSource.reps}
-        </button>
+        <div className="ml-6 flex items-center gap-2">
+          <span className="text-[9px] text-gray-700 font-semibold">{sameLabel}:</span>
+          <button
+            onClick={handleSameAs}
+            className="text-[10px] text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-2.5 py-0.5 hover:bg-violet-900/40 transition-colors font-semibold"
+          >
+            ↩ {sameSource.weight}kg × {sameSource.reps}
+          </button>
+        </div>
       )}
     </div>
   )

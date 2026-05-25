@@ -8,6 +8,7 @@ import TabBar from '@/components/TabBar'
 import DayScreen from '@/components/DayScreen'
 import StatsScreen from '@/components/StatsScreen'
 import SyncIndicator from '@/components/SyncIndicator'
+import OnboardingScreen, { needsOnboarding } from '@/components/OnboardingScreen'
 
 function todayIndex(): number {
   // JS: 0=Sun,1=Mon...6=Sat → remap to Mon=0...Sun=6
@@ -21,6 +22,7 @@ function AppContent() {
     typeof window !== 'undefined' ? todayIndex() : 0
   )
   const [showStats, setShowStats] = useState(false)
+  const [onboarding, setOnboarding] = useState(() => needsOnboarding())
   const { allLogs, syncing, offline } = useLog(active)
   const { signOut } = useAuth()
 
@@ -40,6 +42,10 @@ function AppContent() {
   const handleSelectDay = (i: number) => {
     setActive(i)
     setShowStats(false)
+  }
+
+  if (onboarding) {
+    return <OnboardingScreen onDone={() => setOnboarding(false)} />
   }
 
   return (

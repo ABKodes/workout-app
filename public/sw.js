@@ -50,6 +50,43 @@ self.addEventListener('fetch', event => {
 // ── Daily workout reminder ────────────────────────────────────────────
 let notifTimeout = null
 
+// ── Pre-game meal reminders (Thu & Sat) ──────────────────────────────
+let pregameTimeouts = []
+
+function msUntilNextWeekday(targetDay, h, m) {
+  // targetDay: 0=Sun,1=Mon,...,4=Thu,6=Sat
+  const now = new Date()
+  const next = new Date()
+  next.setHours(h, m, 0, 0)
+  const daysUntil = (targetDay - now.getDay() + 7) % 7
+  next.setDate(now.getDate() + (daysUntil === 0 && next <= now ? 7 : daysUntil))
+  return next - now
+}
+
+function schedulePregame(thuTime, satTime) {
+  pregameTimeouts.forEach(t => clearTimeout(t))
+  pregameTimeouts = []
+
+  function scheduleDay(dayNum, timeStr, label) {
+    const [h, m] = timeStr.split(':').map(Number)
+    const delay = msUntilNextWeekday(dayNum, h, m)
+    const t = setTimeout(() => {
+      self.registration.showNotification(`Eat now for ${label} ⚽`, {
+        body: `Injera + tibs or rice + lentils. Game in ~3 hours — fuel up now.`,
+        icon: '/icon-192.png',
+        tag: `pregame-${dayNum}`,
+        renotify: true,
+        vibrate: [200, 100, 200],
+      })
+      scheduleDay(dayNum, timeStr, label)
+    }, delay)
+    pregameTimeouts.push(t)
+  }
+
+  scheduleDay(4, thuTime, "tonight's game")
+  scheduleDay(6, satTime, "today's game")
+}
+
 function scheduleNext(timeStr) {
   if (notifTimeout) clearTimeout(notifTimeout)
   const [h, m] = timeStr.split(':').map(Number)
@@ -124,6 +161,13 @@ self.addEventListener('message', event => {
   }
   if (event.data?.type === 'REST_START') event.waitUntil(startRest(event.data.endsAt))
   if (event.data?.type === 'REST_CANCEL') event.waitUntil(cancelRest())
+  if (event.data?.type === 'PREGAME_SCHEDULE') {
+    schedulePregame(event.data.thuTime, event.data.satTime)
+  }
+  if (event.data?.type === 'PREGAME_CANCEL') {
+    pregameTimeouts.forEach(t => clearTimeout(t))
+    pregameTimeouts = []
+  }
 })
 
 // ── Notification click ────────────────────────────────────────────────

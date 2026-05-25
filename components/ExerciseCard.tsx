@@ -186,7 +186,7 @@ export default function ExerciseCard({
             const allDone = currentSetIndex >= numSets
             return (
               <>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] text-gray-600 font-bold uppercase tracking-widest">Sets</span>
                   {!allDone && (
                     <span className="text-[10px] font-bold text-violet-400">
@@ -197,6 +197,16 @@ export default function ExerciseCard({
                     <span className="text-[10px] font-bold text-green-400">✓ All sets done</span>
                   )}
                 </div>
+                {prevLog && prevLog.sets.filter(s => s?.done).length > 0 && (
+                  <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+                    <span className="text-[9px] text-gray-700 font-bold uppercase tracking-wider">Last:</span>
+                    {prevLog.sets.filter(s => s?.done).map((s, i) => (
+                      <span key={i} className="text-[9px] text-gray-600 bg-[#1a1a1a] rounded-md px-1.5 py-0.5 font-semibold">
+                        {s.weight}kg×{s.reps}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 {Array.from({ length: numSets }, (_, i) => (
                   <SetRow
                     key={i}
