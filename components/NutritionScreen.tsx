@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { nutrition } from '@/lib/data'
 import OneRMCalc from './OneRMCalc'
 import PlateCalc from './PlateCalc'
+import ProteinCalc from './ProteinCalc'
 
 export default function NutritionScreen() {
   const [showOrm, setShowOrm] = useState(false)
@@ -47,6 +48,12 @@ export default function NutritionScreen() {
             </span>
           )
         )}
+      </div>
+
+      {/* Protein Calculator */}
+      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Protein target</p>
+      <div className="mb-6">
+        <ProteinCalc />
       </div>
 
       {/* Supplements */}

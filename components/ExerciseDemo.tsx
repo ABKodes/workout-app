@@ -1,22 +1,32 @@
 'use client'
 import { useExerciseGif } from '@/lib/useExerciseGif'
 
-// Jeff Nippard YouTube video IDs — full tutorials + Shorts from his own channel
-// Shorts are vertical (9:16); regular videos are landscape (16:9)
-const JEFF_VIDEOS: Record<string, { id: string; short: boolean }> = {
-  // Full tutorials (landscape)
-  'DB RDL':                        { id: 'Q5vwsJFwhyg', short: false },
-  'Helms Row':                     { id: 'djKXLt7kv7Q', short: false },
-  'Close-Grip Assisted Dip':       { id: 'TOgUqAurYNk', short: false },
-  'Hammer Curl':                   { id: 'GNO4OtYoCYk', short: false },
-  'Standing Calf Raise':           { id: '21inrjhoFkQ', short: false },
-  'Nordic Ham Curl':               { id: 'jNC3aYBHL1I', short: false },
-  'DB Flye w/ Integrated Partials':{ id: 'sNoYUpivUfY', short: false },
-  'DB Skull Crusher':              { id: 'popGXI-qs98', short: false },
-  // Shorts from Jeff Nippard's channel (@JeffNippard)
-  'DB Lateral Raise':              { id: 'OWAfHGmOf0A', short: true },  // Best Side Delt Exercise
-  'Low Incline DB Press':          { id: 'xGMqmmn5Z7Q', short: true },  // Best Incline for Upper Chest
-  'Bent-Over Reverse DB Flye':     { id: 'zEuseRjS7vg', short: true },  // Best Rear Delt Exercise
+// All YouTube Shorts (9:16 vertical) — Jeff Nippard priority, other verified creators as fallback
+const SHORTS: Record<string, string> = {
+  // Jeff Nippard's own channel
+  'DB Lateral Raise':               'OWAfHGmOf0A',
+  'Low Incline DB Press':           'xGMqmmn5Z7Q',
+  'DB Flye w/ Integrated Partials': 'qg3B1Uu6dto',
+  'Helms Row':                      'fgSyNdEsqlM',
+  'Bent-Over Reverse DB Flye':      'zEuseRjS7vg',
+  'Overhand Lat Pulldown':          'SqQxuEpXnF4',
+  'Standing Calf Raise':            'baEXLy09Ncc',
+  // Other verified fitness creators
+  'DB Skull Crusher':               'n5R_-ubdZ5Y',  // Massive Iron (Steve Shaw)
+  'Close-Grip Assisted Dip':        '6D5Md54CtDc',  // JayCutlerTV
+  'Plate-Weighted Crunch':          'MCccsKQWGDk',  // Jason Sani
+  'DB RDL':                         '5exUDBgk_BU',  // Live Lean TV
+  'DB Lat Pullover':                'DWYE0DOEiO4',  // Critical Bench Compound
+  'Hammer Curl':                    '0QiUo3RkkJU',  // THE FIT SINGH
+  'Hack Squat / Goblet Squat':      'lRYBbchqxtI',  // SquatCouple
+  'Nordic Ham Curl':                'gDhepQu0Xuo',  // Marcus Filly
+  'Copenhagen Hip Adduction':       'AiYzzRoXOEY',  // [P]rehab
+  'Reverse Nordic':                 '_nQkBLoARfU',  // Muscle & Motion
+  'Depth Jumps':                    '2cxlpWrKEcE',  // Alpha Project Phyzio
+  'Split Squat Jumps':              '4PRGCgO9jCE',  // Joey Thurman
+  'Box Jumps':                      'O_Y_3VBICuY',  // Orillia Sports Medicine
+  'Single-Leg Lateral Hops':        'u7Cp4Lges4Y',  // Rehab Hero
+  'Broad Jumps':                    'SFjFcW3MqCI',  // Newstead Jomes
 }
 
 interface Props {
@@ -26,7 +36,7 @@ interface Props {
 }
 
 export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
-  const video = JEFF_VIDEOS[name]
+  const shortId = SHORTS[name]
   const { gifUrl, loading, onError } = useExerciseGif(name)
   const query = encodeURIComponent('jeff nippard ' + name + ' tutorial')
   const ytUrl = `https://www.youtube.com/results?search_query=${query}`
@@ -41,16 +51,16 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
         {/* Handle */}
         <div className="w-10 h-1 bg-[#333] rounded-full mx-auto mb-4" />
 
-        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo · Jeff Nippard</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1">Exercise demo</p>
         <h3 className="text-white font-black text-[16px] leading-snug mb-3">{name}</h3>
 
         {/* Video / GIF area */}
         <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4">
-          {video ? (
+          {shortId ? (
             <iframe
-              src={`https://www.youtube.com/embed/${video.id}?modestbranding=1&rel=0&playsinline=1`}
+              src={`https://www.youtube.com/embed/${shortId}?modestbranding=1&rel=0&playsinline=1`}
               className="w-full"
-              style={{ height: video.short ? 420 : 210 }}
+              style={{ height: 420 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
