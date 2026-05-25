@@ -3,7 +3,7 @@ import { useExerciseGif } from '@/lib/useExerciseGif'
 
 // All YouTube Shorts (9:16 vertical) — Jeff Nippard priority, other verified creators as fallback
 const SHORTS: Record<string, string> = {
-  // Jeff Nippard's own channel
+  // ── Main exercises — Jeff Nippard ──────────────────────────────────
   'DB Lateral Raise':               'OWAfHGmOf0A',
   'Low Incline DB Press':           'xGMqmmn5Z7Q',
   'DB Flye w/ Integrated Partials': 'qg3B1Uu6dto',
@@ -11,8 +11,8 @@ const SHORTS: Record<string, string> = {
   'Bent-Over Reverse DB Flye':      'zEuseRjS7vg',
   'Overhand Lat Pulldown':          'SqQxuEpXnF4',
   'Standing Calf Raise':            'baEXLy09Ncc',
-  // Other verified fitness creators
-  'DB Skull Crusher':               'n5R_-ubdZ5Y',  // Massive Iron (Steve Shaw)
+  // ── Main exercises — other verified creators ───────────────────────
+  'DB Skull Crusher':               'n5R_-ubdZ5Y',  // Massive Iron
   'Close-Grip Assisted Dip':        '6D5Md54CtDc',  // JayCutlerTV
   'Plate-Weighted Crunch':          'MCccsKQWGDk',  // Jason Sani
   'DB RDL':                         '5exUDBgk_BU',  // Live Lean TV
@@ -27,6 +27,25 @@ const SHORTS: Record<string, string> = {
   'Box Jumps':                      'O_Y_3VBICuY',  // Orillia Sports Medicine
   'Single-Leg Lateral Hops':        'u7Cp4Lges4Y',  // Rehab Hero
   'Broad Jumps':                    'SFjFcW3MqCI',  // Newstead Jomes
+  // ── Substitution exercises — Jeff Nippard ─────────────────────────
+  'Dual-Handle Lat Pulldown':       'hnSqbBk15tw',  // "Stop Messing Up Your Lat Pulldowns"
+  'Overhead Cable Tricep Extension':'5YaWrGPtIIE',  // "Everyone Is Still Confused About Triceps Training"
+  'Triceps Pressdown (Rope)':       'sah-sHCZDS0',  // "The BEST Exercises For Bigger Triceps"
+  'Machine Crunch':                 'eLCBC6fjtQU',  // "The Best Ab Exercise No One Knows"
+  'Hammer Preacher Curl':           'j5f_0rNkPwU',  // "Top 4 BICEPS Exercises (Brutal Stretch!)"
+  'Leg Extension':                  'ztNBgrGy6FQ',  // "A Better Way To Do Leg Extensions"
+  'Seated Calf Raise':              'xK6DoHBXTdw',  // "This Is Why Your Calves Won't Grow"
+  // ── Substitution exercises — other verified creators ──────────────
+  'Cuffed Behind-The-Back Lateral Raise': 'NTTuJZjIv-0', // GainLords — exact movement demo
+  'Low Incline Smith Press':        'VXaBbUYMfIs',  // DeltaBolic — "The PERFECT Incline Smith Machine"
+  'Pec Deck':                       'g3T7LsEeDWQ',  // Davis Diley — "Best Chest Fly Tutorial • Pec Deck"
+  'Snatch-Grip RDL':                '2J9iLgw2FR0',  // Character Strength & Conditioning
+  'Chest-Supported Row':            'OmlKl6oeeMk',  // Gym College (Jeff Nippard clip)
+  'Machine Lat Pullover':           '0KhBIs53C3c',  // JayCutlerTV
+  'Rope Face Pull':                 'OrhWIGmGeQM',  // Gains Summarised (Jeff Nippard demo)
+  'Lying Leg Curl':                 'jNC3aYBHL1I',  // Will Tennyson (Jeff Nippard coaching)
+  'Cable Hip Adduction':            'csBdrNsj1hw',  // Tim Trevail
+  'Front Squat':                    '-L5mDFdsgZo',  // Peak Performance (Jeff Nippard guide)
 }
 
 interface Props {
