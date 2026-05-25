@@ -13,7 +13,7 @@ export default function NutritionScreen() {
 
   const macroItems = macros ? [
     { val: macros.calories.toLocaleString(), label: 'Calories', unit: 'kcal', highlight: true },
-    { val: `${macros.protein}g`,             label: 'Protein',  unit: '2.0 g/kg', highlight: true },
+    { val: `${macros.protein}g`,             label: 'Protein',  unit: '2.4 g/kg', highlight: true },
     { val: `${macros.carbs}g`,               label: 'Carbs',    unit: 'remainder', highlight: false },
     { val: `${macros.fat}g`,                 label: 'Fat',      unit: '0.8 g/kg', highlight: false },
   ] : null

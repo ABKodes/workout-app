@@ -37,7 +37,7 @@ function calculate(weightKg: number, profile: BodyProfile): Macros {
   // 20% deficit → 0.5–0.7 kg/week fat loss
   const calories = Math.round(tdee * 0.80)
 
-  const protein = Math.round(weightKg * 2.0)  // 2.0 g/kg
+  const protein = Math.round(weightKg * 2.4)  // 2.4 g/kg — higher during cut to preserve muscle
   const fat     = Math.round(weightKg * 0.8)  // 0.8 g/kg (hormonal floor)
   const carbs   = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4))
 
