@@ -15,7 +15,40 @@ export interface Macros {
   fat: number
 }
 
+export type Phase = 'cut' | 'maintenance' | 'bulk'
+
+export const PHASE_CONFIG: Record<Phase, {
+  label: string
+  description: string
+  calorieMultiplier: number
+  proteinPerKg: number
+  fatPerKg: number
+}> = {
+  cut: {
+    label: 'Cut',
+    description: '20% deficit · 0.5–0.7 kg/week loss',
+    calorieMultiplier: 0.80,
+    proteinPerKg: 2.4,
+    fatPerKg: 0.8,
+  },
+  maintenance: {
+    label: 'Maintenance',
+    description: 'TDEE balance · weight stable',
+    calorieMultiplier: 1.00,
+    proteinPerKg: 2.0,
+    fatPerKg: 0.8,
+  },
+  bulk: {
+    label: 'Bulk',
+    description: '10% surplus · ~0.25 kg/week gain',
+    calorieMultiplier: 1.10,
+    proteinPerKg: 2.0,
+    fatPerKg: 1.0,
+  },
+}
+
 const PROFILE_KEY = 'body_profile_v1'
+const PHASE_KEY   = 'macro_phase_v1'
 
 function loadProfile(): BodyProfile | null {
   if (typeof window === 'undefined') return null
@@ -25,21 +58,27 @@ function loadProfile(): BodyProfile | null {
   } catch { return null }
 }
 
-function calculate(weightKg: number, profile: BodyProfile): Macros {
+function loadPhase(): Phase {
+  if (typeof window === 'undefined') return 'cut'
+  const raw = localStorage.getItem(PHASE_KEY)
+  return (raw === 'cut' || raw === 'maintenance' || raw === 'bulk') ? raw : 'cut'
+}
+
+function calculate(weightKg: number, profile: BodyProfile, phase: Phase): Macros {
+  const cfg = PHASE_CONFIG[phase]
+
   // Mifflin-St Jeor BMR
   const bmr = profile.sex === 'male'
     ? 10 * weightKg + 6.25 * profile.heightCm - 5 * profile.age + 5
     : 10 * weightKg + 6.25 * profile.heightCm - 5 * profile.age - 161
 
-  // Very active multiplier: gym 3x + football 6hrs/week + sprint sessions
+  // Very active: gym 3x + football 6hrs/week + sprint sessions
   const tdee = bmr * 1.725
 
-  // 20% deficit → 0.5–0.7 kg/week fat loss
-  const calories = Math.round(tdee * 0.80)
-
-  const protein = Math.round(weightKg * 2.4)  // 2.4 g/kg — higher during cut to preserve muscle
-  const fat     = Math.round(weightKg * 0.8)  // 0.8 g/kg (hormonal floor)
-  const carbs   = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4))
+  const calories = Math.round(tdee * cfg.calorieMultiplier)
+  const protein  = Math.round(weightKg * cfg.proteinPerKg)
+  const fat      = Math.round(weightKg * cfg.fatPerKg)
+  const carbs    = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4))
 
   return { calories, protein, carbs, fat }
 }
@@ -47,16 +86,22 @@ function calculate(weightKg: number, profile: BodyProfile): Macros {
 export function useMacros() {
   const { today, entries } = useBodyWeight()
   const [profile, setProfile] = useState<BodyProfile | null>(() => loadProfile())
+  const [phase, setPhaseState] = useState<Phase>(() => loadPhase())
 
   const weightKg = today?.weight
     ?? (entries.length > 0 ? entries[entries.length - 1].weight : null)
 
-  const macros = weightKg && profile ? calculate(weightKg, profile) : null
+  const macros = weightKg && profile ? calculate(weightKg, profile, phase) : null
 
   const saveProfile = useCallback((p: BodyProfile) => {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(p))
     setProfile(p)
   }, [])
 
-  return { macros, profile, saveProfile, weightKg }
+  const setPhase = useCallback((p: Phase) => {
+    localStorage.setItem(PHASE_KEY, p)
+    setPhaseState(p)
+  }, [])
+
+  return { macros, profile, saveProfile, weightKg, phase, setPhase }
 }

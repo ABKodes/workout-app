@@ -4,24 +4,50 @@ import { nutrition } from '@/lib/data'
 import OneRMCalc from './OneRMCalc'
 import PlateCalc from './PlateCalc'
 import MacroSetup from './MacroSetup'
-import { useMacros } from '@/lib/useMacros'
+import { useMacros, PHASE_CONFIG, Phase } from '@/lib/useMacros'
+
+const PHASES: Phase[] = ['cut', 'maintenance', 'bulk']
 
 export default function NutritionScreen() {
   const [showOrm, setShowOrm] = useState(false)
   const [showPlates, setShowPlates] = useState(false)
-  const { macros, profile, saveProfile, weightKg } = useMacros()
+  const { macros, profile, saveProfile, weightKg, phase, setPhase } = useMacros()
+
+  const cfg = PHASE_CONFIG[phase]
 
   const macroItems = macros ? [
-    { val: macros.calories.toLocaleString(), label: 'Calories', unit: 'kcal', highlight: true },
-    { val: `${macros.protein}g`,             label: 'Protein',  unit: '2.4 g/kg', highlight: true },
-    { val: `${macros.carbs}g`,               label: 'Carbs',    unit: 'remainder', highlight: false },
-    { val: `${macros.fat}g`,                 label: 'Fat',      unit: '0.8 g/kg', highlight: false },
+    { val: macros.calories.toLocaleString(), label: 'Calories', unit: 'kcal',                        highlight: true  },
+    { val: `${macros.protein}g`,             label: 'Protein',  unit: `${cfg.proteinPerKg} g/kg`,    highlight: true  },
+    { val: `${macros.carbs}g`,               label: 'Carbs',    unit: 'remainder',                   highlight: false },
+    { val: `${macros.fat}g`,                 label: 'Fat',      unit: `${cfg.fatPerKg} g/kg`,        highlight: false },
   ] : null
 
   return (
     <div className="pb-28">
       <h1 className="text-xl font-black text-white mb-0.5">Nutrition</h1>
-      <p className="text-[12px] text-gray-500 mb-5">Daily targets · Cut phase</p>
+      <p className="text-[12px] text-gray-500 mb-5">Daily targets · {cfg.label} phase</p>
+
+      {/* Phase selector */}
+      <div className="flex gap-2 mb-4">
+        {PHASES.map(p => (
+          <button
+            key={p}
+            onClick={() => setPhase(p)}
+            className={`flex-1 py-2.5 rounded-xl text-[12px] font-black border transition-colors capitalize ${
+              phase === p
+                ? p === 'cut'
+                  ? 'bg-violet-500 border-violet-500 text-black'
+                  : p === 'bulk'
+                  ? 'bg-green-500 border-green-500 text-black'
+                  : 'bg-blue-500 border-blue-500 text-black'
+                : 'bg-[#111] border-[#1e1e1e] text-gray-500'
+            }`}
+          >
+            {PHASE_CONFIG[p].label}
+          </button>
+        ))}
+      </div>
+      <p className="text-[10px] text-gray-600 mb-4 -mt-2">{cfg.description}</p>
 
       {/* Macros */}
       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Daily macros</p>
@@ -55,7 +81,7 @@ export default function NutritionScreen() {
             ))}
           </div>
           <p className="text-[10px] text-gray-700 text-right mb-4">
-            Based on {weightKg} kg · 20% deficit · TDEE ×0.80
+            Based on {weightKg} kg · TDEE ×{cfg.calorieMultiplier.toFixed(2)}
           </p>
         </>
       ) : null}
