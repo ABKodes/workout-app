@@ -152,7 +152,7 @@ export const nutrition = {
   tip: 'Lose 0.5–0.7kg/week. Carb-load Thu & Sat game days — injera + tibs/shiro pre-game. Protein every meal: eggs, lentils, tibs, ayib. Whey shake fills gaps. Creatine 5g every day including rest days. Carb-load Friday evening for Saturday.',
   supplements: [
     { icon: '🔵', name: 'Creatine Monohydrate', dose: '5g/day every day. Available at pharmacies in Bole/CMC, Addis.' },
-    { icon: '🥤', name: 'Whey Protein', dose: '25–30g post-workout or anytime. Hit 175g protein daily.' },
+    { icon: '🥤', name: 'Whey Protein', dose: '25–30g post-workout or anytime. Use to hit your daily protein target shown above.' },
     { icon: '☕', name: 'Caffeine', dose: 'Ethiopian black coffee 30 min pre-gym. No other pre-workout needed.' },
     { icon: '💊', name: 'Multivitamin (optional)', dose: '1/day with food. Good insurance given your high training volume.' },
   ],

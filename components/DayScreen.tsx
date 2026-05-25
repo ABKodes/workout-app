@@ -42,7 +42,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     const n = parseInt(e.sets)
     const activeName = getActiveName(e.name)
     const log = todayLog?.exercises[activeName]
-    return log && log.sets.filter(s => s.done).length >= n
+    return log && (log.sets || []).filter(s => s?.done).length >= n
   }).length
 
   const handleFinish = () => {
@@ -55,7 +55,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     const log = todayLog?.exercises[activeName]
     if (!log) return []
     const upper = upperReps(e.reps)
-    const done = log.sets.filter(s => s.done)
+    const done = (log.sets || []).filter(s => s?.done)
     if (done.length === 0 || !done.every(s => parseInt(s.reps) >= upper)) return []
     const maxW = Math.max(...done.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
     if (isNaN(maxW)) return []
