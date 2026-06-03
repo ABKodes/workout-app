@@ -113,20 +113,22 @@ export default function NutritionScreen() {
 
       {/* Calculators */}
       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Calculators</p>
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-2">
         <button
           onClick={() => setShowOrm(true)}
-          className="flex-1 py-3 rounded-xl text-sm font-bold border bg-[#111] border-[#1e1e1e] text-gray-400 hover:border-violet-900/60 hover:text-violet-400 transition-colors"
+          className="flex-1 py-3 rounded-xl text-sm font-bold border bg-[#111] border-[#1e1e1e] text-gray-400 active:bg-[#1a1a1a] transition-colors"
         >
           🏋️ 1RM Calculator
         </button>
         <button
           onClick={() => setShowPlates(true)}
-          className="flex-1 py-3 rounded-xl text-sm font-bold border bg-[#111] border-[#1e1e1e] text-gray-400 hover:border-violet-900/60 hover:text-violet-400 transition-colors"
+          className="flex-1 py-3 rounded-xl text-sm font-bold border bg-[#111] border-[#1e1e1e] text-gray-400 active:bg-[#1a1a1a] transition-colors"
         >
-          🍽️ Plates
+          🍽️ Plate Calculator
         </button>
       </div>
+      <p className="text-[10px] text-gray-700 text-center">Tap to open</p>
+
       {showOrm && <OneRMCalc onClose={() => setShowOrm(false)} />}
       {showPlates && <PlateCalc onClose={() => setShowPlates(false)} />}
     </div>
