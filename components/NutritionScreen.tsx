@@ -113,26 +113,22 @@ export default function NutritionScreen() {
 
       {/* Calculators */}
       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Calculators</p>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2">
         <button
-          onClick={() => setShowOrm(v => !v)}
-          className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-colors ${
-            showOrm ? 'bg-violet-500 border-violet-500 text-black' : 'bg-[#111] border-[#1e1e1e] text-gray-400'
-          }`}
+          onClick={() => setShowOrm(true)}
+          className="flex-1 py-3 rounded-xl text-sm font-bold border bg-[#111] border-[#1e1e1e] text-gray-400 hover:border-violet-900/60 hover:text-violet-400 transition-colors"
         >
           🏋️ 1RM Calculator
         </button>
         <button
-          onClick={() => setShowPlates(v => !v)}
-          className={`flex-1 py-3 rounded-xl text-sm font-bold border transition-colors ${
-            showPlates ? 'bg-violet-500 border-violet-500 text-black' : 'bg-[#111] border-[#1e1e1e] text-gray-400'
-          }`}
+          onClick={() => setShowPlates(true)}
+          className="flex-1 py-3 rounded-xl text-sm font-bold border bg-[#111] border-[#1e1e1e] text-gray-400 hover:border-violet-900/60 hover:text-violet-400 transition-colors"
         >
           🍽️ Plates
         </button>
       </div>
-      {showOrm && <div className="mb-4"><OneRMCalc /></div>}
-      {showPlates && <div className="mb-4"><PlateCalc /></div>}
+      {showOrm && <OneRMCalc onClose={() => setShowOrm(false)} />}
+      {showPlates && <PlateCalc onClose={() => setShowPlates(false)} />}
     </div>
   )
 }

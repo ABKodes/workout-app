@@ -2,6 +2,7 @@
 import { useCallback, useState } from 'react'
 import { useNotifications } from '@/lib/useNotifications'
 import { supabase } from '@/lib/supabase'
+import ConfirmModal from './ConfirmModal'
 
 const PREGAME_ENABLED_KEY = 'pregame_notif_v1'
 const PREGAME_THU_KEY = 'pregame_thu_time_v1'
@@ -196,29 +197,9 @@ export default function NotificationSettings() {
         <div className="px-4 py-3 border-b border-[#1e1e1e]">
           <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Data</p>
         </div>
-
         <div className="px-4 py-4">
           {resetDone ? (
             <p className="text-center text-green-400 font-bold text-sm py-1">✓ All data cleared</p>
-          ) : confirmReset ? (
-            <div className="space-y-3">
-              <p className="text-sm text-red-400 font-bold text-center">This will permanently delete all workout logs and body weight entries.</p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setConfirmReset(false)}
-                  className="flex-1 py-3 bg-[#1a1a1a] text-gray-400 font-bold text-sm rounded-xl border border-[#2a2a2a]"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleReset}
-                  disabled={resetting}
-                  className="flex-1 py-3 bg-red-900/50 text-red-400 font-bold text-sm rounded-xl border border-red-900 disabled:opacity-50"
-                >
-                  {resetting ? 'Resetting...' : 'Yes, reset'}
-                </button>
-              </div>
-            </div>
           ) : (
             <button
               onClick={() => setConfirmReset(true)}
@@ -229,6 +210,17 @@ export default function NotificationSettings() {
           )}
         </div>
       </div>
+
+      {confirmReset && (
+        <ConfirmModal
+          title="Delete all data?"
+          body="This permanently deletes every workout log and body weight entry. There is no undo."
+          confirmLabel="Yes, delete everything"
+          loading={resetting}
+          onConfirm={handleReset}
+          onCancel={() => setConfirmReset(false)}
+        />
+      )}
     </div>
   )
 }
