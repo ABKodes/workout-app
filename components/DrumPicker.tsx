@@ -6,6 +6,7 @@ interface Props {
   selected: string
   onChange: (value: string) => void
   label?: string
+  ariaLabel?: string
   width?: number
 }
 
@@ -14,7 +15,7 @@ const ITEM_H = 32
 const VISIBLE = 3
 const PAD = 1 // items of padding top/bottom
 
-export default function DrumPicker({ values, selected, onChange, label, width = 88 }: Props) {
+export default function DrumPicker({ values, selected, onChange, label, ariaLabel, width = 88 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ignoreScroll = useRef(false)
@@ -73,6 +74,10 @@ export default function DrumPicker({ values, selected, onChange, label, width = 
         <div
           ref={ref}
           onScroll={handleScroll}
+          role="spinbutton"
+          aria-label={ariaLabel || label || 'value picker'}
+          aria-valuetext={selected}
+          tabIndex={0}
           className="h-full overflow-y-scroll bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]"
           style={{ scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >

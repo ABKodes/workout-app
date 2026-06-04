@@ -52,6 +52,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     finishSession()
     setFinished(true)
     setShowConfetti(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   // Session summary stats — computed once on finish
@@ -136,7 +137,8 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
             </div>
             <button
               onClick={() => setGuided(true)}
-              className="text-[11px] font-bold text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-3 py-1 hover:bg-violet-900/40 transition-colors"
+              aria-label="Start guided session"
+              className="text-[11px] font-bold text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-3 py-1 hover:bg-violet-900/40 active:bg-violet-900/60 active:scale-95 transition-all"
             >
               🎯 Guided session
             </button>

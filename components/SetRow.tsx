@@ -78,6 +78,7 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
                 selected={weight}
                 onChange={w => onUpdate({ weight: w })}
                 label="kg"
+                ariaLabel={`Set ${setIndex + 1} weight in kilograms`}
                 width={72}
               />
               <span className="text-gray-700 text-sm font-bold">×</span>
@@ -88,13 +89,16 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
             selected={reps}
             onChange={r => onUpdate({ reps: r })}
             label="reps"
+            ariaLabel={`Set ${setIndex + 1} reps`}
             width={56}
           />
         </div>
 
         <button
           onClick={handleDone}
-          className={`ml-auto w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+          aria-label={done ? `Unmark set ${setIndex + 1}` : `Mark set ${setIndex + 1} done`}
+          aria-pressed={done}
+          className={`ml-auto w-8 h-8 rounded-full flex items-center justify-center border transition-all active:scale-90 ${
             done
               ? 'bg-violet-500 border-violet-500 text-black'
               : 'border-[#2a2a2a] text-gray-600 hover:border-violet-500'

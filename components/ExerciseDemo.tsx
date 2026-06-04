@@ -1,4 +1,5 @@
 'use client'
+import { useEffect, useState } from 'react'
 import { useExerciseGif } from '@/lib/useExerciseGif'
 
 // All YouTube Shorts (9:16 vertical) — Jeff Nippard priority, other verified creators as fallback
@@ -59,6 +60,11 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
   const { gifUrl, loading, onError } = useExerciseGif(name)
   const query = encodeURIComponent('jeff nippard ' + name + ' tutorial')
   const ytUrl = `https://www.youtube.com/results?search_query=${query}`
+  // Defer iframe src until after mount so it doesn't block the modal opening
+  const [iframeSrc, setIframeSrc] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    if (shortId) setIframeSrc(`https://www.youtube.com/embed/${shortId}?modestbranding=1&rel=0&playsinline=1`)
+  }, [shortId])
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
@@ -77,11 +83,12 @@ export default function ExerciseDemo({ name, cleanNote, onClose }: Props) {
         <div className="rounded-xl overflow-hidden bg-[#0d0d0d] border border-[#1e1e1e] mb-4">
           {shortId ? (
             <iframe
-              src={`https://www.youtube.com/embed/${shortId}?modestbranding=1&rel=0&playsinline=1`}
+              src={iframeSrc}
               className="w-full"
               style={{ height: 420 }}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              title={`${name} demonstration`}
             />
           ) : (
             <>

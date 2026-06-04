@@ -105,7 +105,7 @@ export default function ExerciseCard({
     : 0
 
   return (
-    <div className="bg-[#111] rounded-xl border border-[#1e1e1e] mb-3 overflow-hidden">
+    <div className="bg-[#111] rounded-xl border border-[#1e1e1e] mb-3 overflow-hidden" role="region" aria-label={activeName}>
       {prWeight !== null && (
         <PrCelebration weight={prWeight} onDismiss={() => setPrWeight(null)} />
       )}

@@ -1,20 +1,26 @@
 import { SessionLog } from '@/types'
 
 const RATIOS: Record<string, number> = {
-  'DB Lateral Raise': 0.05,
-  'Low Incline DB Press': 0.18,
-  'DB Flye w/ Integrated Partials': 0.08,
-  'DB Skull Crusher': 0.08,
-  'Close-Grip Assisted Dip': 0.10,
-  'Plate-Weighted Crunch': 0.06,
-  'Overhand Lat Pulldown': 0.45,
-  'DB RDL': 0.22,
-  'Helms Row': 0.18,
-  'DB Lat Pullover': 0.12,
-  'Hammer Curl': 0.09,
-  'Bent-Over Reverse DB Flye': 0.06,
-  'Hack Squat / Goblet Squat': 0.30,
-  'Standing Calf Raise': 0.55,
+  // Push
+  'DB Lateral Raise':               0.12,  // 74kg → ~9kg
+  'Low Incline DB Press':           0.28,  // 74kg → ~20kg
+  'DB Flye w/ Integrated Partials': 0.14,  // 74kg → ~10kg
+  'DB Skull Crusher':               0.14,  // 74kg → ~10kg
+  'Close-Grip Assisted Dip':        0.14,  // assistance counterweight
+  'Plate-Weighted Crunch':          0.08,  // 74kg → ~6kg plate
+  // Pull
+  'Overhand Lat Pulldown':          0.50,  // 74kg → ~37kg
+  'DB RDL':                         0.32,  // 74kg → ~24kg
+  'Helms Row':                      0.24,  // 74kg → ~18kg
+  'DB Lat Pullover':                0.18,  // 74kg → ~13kg
+  'Hammer Curl':                    0.16,  // 74kg → ~12kg
+  'Bent-Over Reverse DB Flye':      0.10,  // 74kg → ~7.5kg
+  // Legs
+  'Hack Squat / Goblet Squat':      0.35,  // 74kg → ~26kg
+  'Standing Calf Raise':            0.55,  // 74kg → ~40kg
+  'Nordic Ham Curl':                0,     // bodyweight
+  'Copenhagen Hip Adduction':       0,     // bodyweight
+  'Reverse Nordic':                 0,     // bodyweight
 }
 
 export function getStartingWeight(exerciseName: string, bodyweightKg: number): number | null {
