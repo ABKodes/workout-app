@@ -90,10 +90,10 @@ export const days: Day[] = [
       {
         head: 'Nippard legs — RPE 7–8 max, never to failure',
         rows: [
-          { name: 'Nordic Ham Curl', note: 'Lean forward over machine for max hamstring stretch. Control the negative. ⚠️ Stop at RPE 8. Sub: Lying Leg Curl', sets: '3', reps: '8–10', rpe: '~7–8', rest: '2–3 min', restSeconds: 150 },
-          { name: 'Copenhagen Hip Adduction', note: 'Mind-muscle on inner thighs. Great for thigh mass and groin stability for football. Sub: Cable Hip Adduction', sets: '3', reps: '10–12', rpe: '~7–8', rest: '1–2 min', restSeconds: 90 },
+          { name: 'Nordic Ham Curl', note: 'Lean forward over machine for max hamstring stretch. Control the negative. ⚠️ Stop at RPE 8. Sub: Lying Leg Curl', sets: '3', reps: '8–10', rpe: '~7–8', rest: '2–3 min', restSeconds: 150, bodyweight: true },
+          { name: 'Copenhagen Hip Adduction', note: 'Mind-muscle on inner thighs. Great for thigh mass and groin stability for football. Sub: Cable Hip Adduction', sets: '3', reps: '10–12', rpe: '~7–8', rest: '1–2 min', restSeconds: 90, bodyweight: true },
           { name: 'Hack Squat / Goblet Squat', note: '⚠️ RPE 7–8 HARD LIMIT. Leave 3–4 reps in tank every set. Sub: Front Squat', sets: '3', reps: '6, 8, 10', rpe: '~7', rest: '3–4 min', restSeconds: 210 },
-          { name: 'Reverse Nordic', note: 'Long-length partials on last set. Knee extension strength — protects against sprinting injuries. Sub: Leg Extension', sets: '3', reps: '10–12', rpe: '~7–8', rest: '1–2 min', restSeconds: 90 },
+          { name: 'Reverse Nordic', note: 'Long-length partials on last set. Knee extension strength — protects against sprinting injuries. Sub: Leg Extension', sets: '3', reps: '10–12', rpe: '~7–8', rest: '1–2 min', restSeconds: 90, bodyweight: true },
           { name: 'Standing Calf Raise', note: '1–2 sec pause at bottom. Roll ankle on balls of feet. Don\'t bounce. Sub: Seated Calf Raise', sets: '3', reps: '12–15', rpe: '~8', rest: '1–2 min', restSeconds: 90 },
         ],
       },
@@ -101,8 +101,8 @@ export const days: Day[] = [
         head: 'Plyometrics — after legs, keep volume low',
         plyo: true,
         rows: [
-          { name: 'Depth Jumps', note: 'Step off a low box, land softly, immediately explode upward. Trains reactive strength — absorb and redirect force instantly.', sets: '2', reps: '6–8', rpe: 'Max', rest: '90s', restSeconds: 0 },
-          { name: 'Split Squat Jumps', note: 'From lunge, jump and switch legs in air. Builds single-leg explosiveness and hip flexor power for accelerating out of turns.', sets: '2', reps: '6/leg', rpe: 'Max', rest: '75s', restSeconds: 0 },
+          { name: 'Depth Jumps', note: 'Step off a low box, land softly, immediately explode upward. Trains reactive strength — absorb and redirect force instantly.', sets: '2', reps: '6–8', rpe: 'Max', rest: '90s', restSeconds: 0, bodyweight: true },
+          { name: 'Split Squat Jumps', note: 'From lunge, jump and switch legs in air. Builds single-leg explosiveness and hip flexor power for accelerating out of turns.', sets: '2', reps: '6/leg', rpe: 'Max', rest: '75s', restSeconds: 0, bodyweight: true },
           { name: 'Cool-down + full stretch', note: 'Full lower body — quads, hamstrings, hip flexors, calves, adductors. 20–30s each. Critical — you play Saturday.', sets: '—', reps: '15 min', rpe: '—', rest: '—', restSeconds: 0 },
         ],
       },

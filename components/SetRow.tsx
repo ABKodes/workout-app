@@ -4,7 +4,7 @@ import DrumPicker from './DrumPicker'
 
 interface Props {
   setIndex: number
-  exercise: { reps: string; restSeconds: number }
+  exercise: { reps: string; restSeconds: number; bodyweight?: boolean }
   setLog: SetLog | undefined
   prevSet: SetLog | undefined
   currentPrevSet: SetLog | undefined
@@ -32,6 +32,7 @@ function nearest(values: string[], val: string): string {
 
 export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPrevSet, isActive, suggestionWeight, onUpdate, onDone }: Props) {
   const done = setLog?.done ?? false
+  const bw = exercise.bodyweight ?? false
 
   // Source for "same as" — prefer current session's previous set if it's done
   const sameSource = currentPrevSet?.done ? currentPrevSet : (prevSet ?? null)
@@ -41,13 +42,21 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
   const reps = nearest(REPS, setLog?.reps ?? sameSource?.reps ?? defaultReps(exercise.reps))
 
   const handleDone = () => {
-    onUpdate({ done: !done, weight, reps })
+    if (bw) {
+      onUpdate({ done: !done, reps })
+    } else {
+      onUpdate({ done: !done, weight, reps })
+    }
     if (!done) onDone()
   }
 
   const handleSameAs = () => {
     if (!sameSource) return
-    onUpdate({ weight: sameSource.weight, reps: sameSource.reps, done: true })
+    if (bw) {
+      onUpdate({ reps: sameSource.reps, done: true })
+    } else {
+      onUpdate({ weight: sameSource.weight, reps: sameSource.reps, done: true })
+    }
     onDone()
   }
 
@@ -57,14 +66,23 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
         <span className={`text-[10px] w-5 shrink-0 font-bold ${isActive ? 'text-violet-400' : 'text-gray-600'}`}>S{setIndex + 1}</span>
 
         <div className="flex items-center gap-2 flex-1">
-          <DrumPicker
-            values={WEIGHTS}
-            selected={weight}
-            onChange={w => onUpdate({ weight: w })}
-            label="kg"
-            width={72}
-          />
-          <span className="text-gray-700 text-sm font-bold">×</span>
+          {bw ? (
+            <>
+              <span className="text-[10px] text-gray-600 font-semibold px-2 py-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg">Bodyweight</span>
+              <span className="text-gray-700 text-sm font-bold">×</span>
+            </>
+          ) : (
+            <>
+              <DrumPicker
+                values={WEIGHTS}
+                selected={weight}
+                onChange={w => onUpdate({ weight: w })}
+                label="kg"
+                width={72}
+              />
+              <span className="text-gray-700 text-sm font-bold">×</span>
+            </>
+          )}
           <DrumPicker
             values={REPS}
             selected={reps}
@@ -93,7 +111,10 @@ export default function SetRow({ setIndex, exercise, setLog, prevSet, currentPre
             onClick={handleSameAs}
             className="text-[10px] text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-2.5 py-0.5 hover:bg-violet-900/40 transition-colors font-semibold"
           >
-            ↩ {sameSource.weight}kg × {sameSource.reps}
+            {bw
+              ? `↩ ${sameSource.reps} reps`
+              : `↩ ${sameSource.weight}kg × ${sameSource.reps}`
+            }
           </button>
         </div>
       )}

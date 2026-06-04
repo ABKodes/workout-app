@@ -6,6 +6,7 @@ export interface Exercise {
   rpe: string
   rest: string
   restSeconds: number
+  bodyweight?: boolean
 }
 
 export interface Section {

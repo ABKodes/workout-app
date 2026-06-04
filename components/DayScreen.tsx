@@ -141,7 +141,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
         )}
       </div>
 
-      {isGym && <QuickWeightLog />}
+      {(isGym || day.badge === 'football') && <QuickWeightLog />}
 
       {dayIndex === 4 && <AlertBanner />}
 
