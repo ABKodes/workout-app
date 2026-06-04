@@ -14,6 +14,7 @@ import PlateCalc from './PlateCalc'
 import GuidedSession from './GuidedSession'
 import ExerciseDemo from './ExerciseDemo'
 import QuickWeightLog from './QuickWeightLog'
+import Confetti from './Confetti'
 
 interface Props {
   day: Day
@@ -36,6 +37,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const [demoExercise, setDemoExercise] = useState<{ name: string; note: string } | null>(null)
   const [finished, setFinished] = useState(false)
   const [guided, setGuided] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const isGym = day.badge === 'gym'
   const allExercises = day.sections.flatMap(s => s.rows).filter(e => parseInt(e.sets) > 0)
@@ -49,6 +51,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const handleFinish = () => {
     finishSession()
     setFinished(true)
+    setShowConfetti(true)
   }
 
   // Session summary stats — computed once on finish
@@ -288,6 +291,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
       {demoExercise && (
         <ExerciseDemo name={demoExercise.name} cleanNote={demoExercise.note} onClose={() => setDemoExercise(null)} />
       )}
+      {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
     </div>
   )
 }

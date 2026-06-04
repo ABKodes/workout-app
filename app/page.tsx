@@ -9,6 +9,8 @@ import DayScreen from '@/components/DayScreen'
 import StatsScreen from '@/components/StatsScreen'
 import SyncIndicator from '@/components/SyncIndicator'
 import OnboardingScreen, { needsOnboarding } from '@/components/OnboardingScreen'
+import AchievementToast from '@/components/AchievementToast'
+import { useAchievements } from '@/lib/useAchievements'
 
 function todayIndex(): number {
   // JS: 0=Sun,1=Mon...6=Sat → remap to Mon=0...Sun=6
@@ -25,6 +27,7 @@ function AppContent() {
   const [onboarding, setOnboarding] = useState(() => needsOnboarding())
   const { allLogs, syncing, offline } = useLog(active)
   const { signOut } = useAuth()
+  const { newlyUnlocked, markSeen } = useAchievements(allLogs)
 
   // Register service worker + reschedule notification if previously enabled
   useEffect(() => {
@@ -51,6 +54,9 @@ function AppContent() {
   return (
     <main className="bg-[#0d0d0d] overflow-y-auto" style={{ height: '100svh' }}>
       <SyncIndicator syncing={syncing} offline={offline} />
+      {newlyUnlocked.length > 0 && (
+        <AchievementToast ids={newlyUnlocked} onDone={() => markSeen(newlyUnlocked)} />
+      )}
       <div className="max-w-lg mx-auto px-4 pt-6">
         {showStats
           ? <StatsScreen allLogs={allLogs} activeDayIndex={active} />

@@ -5,8 +5,9 @@ import NutritionScreen from './NutritionScreen'
 import BodyWeightSection from './BodyWeightSection'
 import ProgressSection from './ProgressSection'
 import NotificationSettings from './NotificationSettings'
+import AchievementsScreen from './AchievementsScreen'
 
-type Tab = 'progress' | 'bodyweight' | 'nutrition' | 'settings'
+type Tab = 'progress' | 'bodyweight' | 'nutrition' | 'achievements' | 'settings'
 
 interface Props {
   allLogs: SessionLog[]
@@ -17,10 +18,11 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
   const [tab, setTab] = useState<Tab>('progress')
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'progress', label: 'Progress', icon: '📈' },
-    { id: 'bodyweight', label: 'Weight', icon: '⚖️' },
-    { id: 'nutrition', label: 'Nutrition', icon: '🥗' },
-    { id: 'settings', label: 'Settings', icon: '⚙️' },
+    { id: 'progress',     label: 'Progress', icon: '📈' },
+    { id: 'bodyweight',   label: 'Weight',   icon: '⚖️' },
+    { id: 'nutrition',    label: 'Nutrition', icon: '🥗' },
+    { id: 'achievements', label: 'Badges',    icon: '🏆' },
+    { id: 'settings',     label: 'Settings',  icon: '⚙️' },
   ]
 
   return (
@@ -46,10 +48,11 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
         ))}
       </div>
 
-      {tab === 'nutrition' && <NutritionScreen />}
-      {tab === 'bodyweight' && <BodyWeightSection />}
-      {tab === 'progress' && <ProgressSection allLogs={allLogs} activeDayIndex={activeDayIndex} />}
-      {tab === 'settings' && <NotificationSettings />}
+      {tab === 'nutrition'    && <NutritionScreen />}
+      {tab === 'bodyweight'   && <BodyWeightSection />}
+      {tab === 'progress'     && <ProgressSection allLogs={allLogs} activeDayIndex={activeDayIndex} />}
+      {tab === 'achievements' && <AchievementsScreen allLogs={allLogs} />}
+      {tab === 'settings'     && <NotificationSettings />}
     </div>
   )
 }
