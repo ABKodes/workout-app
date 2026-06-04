@@ -34,6 +34,23 @@ export default function DrumPicker({ values, selected, onChange, label, ariaLabe
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected])
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    const idx = idxOf(selected)
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      if (idx > 0) onChange(values[idx - 1])
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      if (idx < values.length - 1) onChange(values[idx + 1])
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      onChange(values[0])
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      onChange(values[values.length - 1])
+    }
+  }
+
   const handleScroll = () => {
     if (ignoreScroll.current) return
     if (debounce.current) clearTimeout(debounce.current)
@@ -78,6 +95,7 @@ export default function DrumPicker({ values, selected, onChange, label, ariaLabe
           aria-label={ariaLabel || label || 'value picker'}
           aria-valuetext={selected}
           tabIndex={0}
+          onKeyDown={handleKeyDown}
           className="h-full overflow-y-scroll bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]"
           style={{ scrollSnapType: 'y mandatory', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
