@@ -160,8 +160,8 @@ function SummaryCard({ allLogs, gymExerciseNames }: { allLogs: SessionLog[]; gym
       for (const log of allLogs) {
         const exLog = log.exercises[name]
         if (!exLog) continue
-        const weights = exLog.sets
-          .filter(s => s.done && s.weight !== '')
+        const weights = (exLog.sets || [])
+          .filter(s => s?.done && s.weight !== '')
           .map(s => parseFloat(s.weight))
           .filter(w => !isNaN(w))
         if (weights.length === 0) continue
@@ -228,8 +228,8 @@ function StrengthGainsCard({ allLogs, gymExerciseNames }: { allLogs: SessionLog[
       for (const log of allLogs) {
         const exLog = log.exercises[name]
         if (!exLog) continue
-        const weights = exLog.sets
-          .filter(s => s.done && s.weight !== '')
+        const weights = (exLog.sets || [])
+          .filter(s => s?.done && s.weight !== '')
           .map(s => parseFloat(s.weight))
           .filter(w => !isNaN(w))
         if (weights.length === 0) continue

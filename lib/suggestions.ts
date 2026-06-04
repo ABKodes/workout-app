@@ -44,7 +44,7 @@ export function getProgressionSuggestion(
 
   const lastSession = sessionsWithEx[0]
   const exLog = lastSession.exercises[exerciseName]
-  const doneSets = exLog.sets.filter(s => s.done)
+  const doneSets = (exLog.sets || []).filter(s => s?.done)
   if (doneSets.length === 0) return null
 
   const weights = doneSets.map(s => parseFloat(s.weight)).filter(w => !isNaN(w) && w > 0)
@@ -55,7 +55,7 @@ export function getProgressionSuggestion(
   if (!nums) return null
   const upperReps = parseInt(nums[nums.length - 1])
 
-  const anyNotDone = exLog.sets.some(s => !s.done)
+  const anyNotDone = (exLog.sets || []).some(s => !s?.done)
   if (anyNotDone) {
     return { weight: lastWeight, badge: 'same' }
   }

@@ -133,7 +133,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
   const latestBW = bwEntries.length > 0 ? bwEntries[bwEntries.length - 1].weight : null
 
   const getSuggestionWeight = useCallback((name: string, reps: string): string => {
-    const hasHistory = allLogs.some(l => l.date !== todayStr && l.exercises[name]?.sets.some(s => s.done))
+    const hasHistory = allLogs.some(l => l.date !== todayStr && (l.exercises[name]?.sets || []).some(s => s?.done))
     if (hasHistory) {
       const prog = getProgressionSuggestion(name, allLogs, reps, todayStr)
       if (prog) return String(prog.weight)
@@ -175,10 +175,10 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
   )
 
   // Suggestion badge for the current exercise (hides once any set is logged today)
-  const anySetDoneToday = exLog?.sets.some(s => s.done) ?? false
+  const anySetDoneToday = (exLog?.sets || []).some(s => s?.done) ?? false
   const suggBadge = (() => {
     if (anySetDoneToday) return null
-    const hasHistory = allLogs.some(l => l.date !== todayStr && l.exercises[activeName]?.sets.some(s => s.done))
+    const hasHistory = allLogs.some(l => l.date !== todayStr && (l.exercises[activeName]?.sets || []).some(s => s?.done))
     if (hasHistory) {
       const prog = getProgressionSuggestion(activeName, allLogs, ex?.reps ?? '8', todayStr)
       return prog?.badge === 'up' ? 'up' : prog?.badge === 'same' ? 'same' : null
@@ -192,7 +192,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
 
   const doneSets = exercises.reduce((sum, e) => {
     const log = todayLog?.exercises[getActiveName(e.name)]
-    return sum + (log?.sets.filter(s => s.done).length ?? 0)
+    return sum + ((log?.sets || []).filter(s => s?.done).length ?? 0)
   }, 0)
 
   const nextLabel = useCallback((): string => {
@@ -239,7 +239,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
     // PR check — if PR fires, skip clean set toast
     const allExLogs = allLogs.flatMap(l => {
       const el = l.exercises[activeName]
-      return el ? el.sets.filter(s => s.done && s.weight !== '').map(s => parseFloat(s.weight)) : []
+      return el ? (el.sets || []).filter(s => s?.done && s.weight !== '').map(s => parseFloat(s.weight)) : []
     }).filter(w => !isNaN(w))
     const histMax = allExLogs.length > 0 ? Math.max(...allExLogs) : 0
     const newW = parseFloat(localWeight)
@@ -275,9 +275,10 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
     const log = todayLog?.exercises[eName]
     if (!log) return []
     const upper = upperReps(e.reps)
-    const allHit = log.sets.filter(s => s.done).every(s => parseInt(s.reps) >= upper)
-    if (!allHit || log.sets.filter(s => s.done).length === 0) return []
-    const maxW = Math.max(...log.sets.filter(s => s.done).map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
+    const doneSets = (log.sets || []).filter(s => s?.done)
+    const allHit = doneSets.every(s => parseInt(s.reps) >= upper)
+    if (!allHit || doneSets.length === 0) return []
+    const maxW = Math.max(...doneSets.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
     if (isNaN(maxW)) return []
     return [`💡 ${eName} — you hit all reps. Try ${maxW + 2.5}kg next session.`]
   }) : []

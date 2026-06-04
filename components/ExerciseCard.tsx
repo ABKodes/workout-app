@@ -68,7 +68,7 @@ export default function ExerciseCard({
 
   const todayStr = new Date().toISOString().slice(0, 10)
   const latestBW = bwEntries.length > 0 ? bwEntries[bwEntries.length - 1].weight : null
-  const hasHistory = allLogs.some(l => l.date !== todayStr && l.exercises[activeName]?.sets.some(s => s.done))
+  const hasHistory = allLogs.some(l => l.date !== todayStr && (l.exercises[activeName]?.sets || []).some(s => s?.done))
 
   let suggestionWeight: string | undefined
   let suggestionBadge: 'up' | 'same' | 'start' | null = null
@@ -87,7 +87,7 @@ export default function ExerciseCard({
     }
   }
 
-  const firstSetDone = todayLog?.sets.some(s => s.done) ?? false
+  const firstSetDone = todayLog?.sets.some(s => s?.done) ?? false
   const showBadge = !firstSetDone && suggestionBadge !== null
 
   const handleSetUpdate = (setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => {
@@ -180,10 +180,9 @@ export default function ExerciseCard({
       {expanded && isLoggable && (
         <div className="px-4 pb-3 border-t border-[#1e1e1e] pt-2">
           {(() => {
-            const currentSetIndex = todayLog
-              ? (todayLog.sets.findIndex(s => !s.done) === -1 ? numSets : todayLog.sets.findIndex(s => !s.done))
-              : 0
-            const allDone = currentSetIndex >= numSets
+            const doneSetsCount = (todayLog?.sets || []).filter(s => s?.done).length
+            const currentSetIndex = doneSetsCount
+            const allDone = doneSetsCount >= numSets
             return (
               <>
                 <div className="flex items-center justify-between mb-1">

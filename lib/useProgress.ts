@@ -15,8 +15,8 @@ export function useProgress(exerciseName: string, allLogs: SessionLog[]) {
     for (const log of allLogs) {
       const exLog = log.exercises[exerciseName]
       if (!exLog) continue
-      const weights = exLog.sets
-        .filter(s => s.done && s.weight !== '')
+      const weights = (exLog.sets || [])
+        .filter(s => s?.done && s.weight !== '')
         .map(s => parseFloat(s.weight))
         .filter(w => !isNaN(w))
       if (weights.length === 0) continue
