@@ -5,7 +5,7 @@ import { useLog } from '@/lib/useLog'
 import { useSubstitutions } from '@/lib/useSubstitutions'
 import { useBodyWeight } from '@/lib/useBodyWeight'
 import { useQuests } from '@/lib/useQuests'
-import { computeSingleSessionXP } from '@/lib/useXP'
+import { computeSingleSessionXP, getPRMax } from '@/lib/useXP'
 import ExerciseCard from './ExerciseCard'
 import StreakBar from './StreakBar'
 import AlertBanner from './AlertBanner'
@@ -83,15 +83,10 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     setTimeout(() => setXpFloats(prev => prev.filter(f => f.id !== id)), 1100)
   }, [])
 
-  // Detect PR for a given exercise name + weight vs allLogs
   const detectPR = useCallback((name: string, weight: number): boolean => {
     if (!todayLog || weight <= 0) return false
-    const prevWts = allLogs
-      .filter(l => l.date !== todayLog.date && l.exercises[name])
-      .flatMap(l => (l.exercises[name].sets || []).filter(s => s?.done).map(s => parseFloat(s.weight)))
-      .filter(w => !isNaN(w) && w > 0)
-    if (!prevWts.length) return false
-    return weight > Math.max(...prevWts)
+    const hMax = getPRMax(name, allLogs, todayLog.date)
+    return hMax > 0 && weight > hMax
   }, [allLogs, todayLog])
 
   const handleSetUpdate = useCallback((name: string, setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => {

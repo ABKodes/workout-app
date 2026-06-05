@@ -44,6 +44,18 @@ export default function CharacterScreen({ allLogs }: Props) {
 
   const xpBarPct = Math.min(100, Math.round((xpIntoLevel / xpToNextLevel) * 100))
 
+  if (completed.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="text-5xl mb-4">⚔️</div>
+        <p className="text-white font-black text-xl mb-2">Your Character Awaits</p>
+        <p className="text-[12px] text-gray-600 max-w-xs leading-relaxed">
+          Complete your first workout session to start earning XP and building your character stats.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="pb-4 space-y-4">
 
@@ -110,7 +122,7 @@ export default function CharacterScreen({ allLogs }: Props) {
               <div key={cfg.key}>
                 <div className="flex justify-between mb-1">
                   <span className="text-[10px] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
-                  <span className="text-[10px] font-bold" style={{ color: cfg.color }}>{val}</span>
+                  <span className="text-[10px] font-bold" style={{ color: cfg.color }}>{val}<span className="font-normal opacity-50">/100</span></span>
                 </div>
                 <div className="h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
                   <div

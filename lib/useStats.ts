@@ -1,9 +1,7 @@
 'use client'
 import { useMemo } from 'react'
 import { SessionLog } from '@/types'
-
-const GYM_DAYS = [0, 1, 4]
-const FOOTBALL_DAYS = [3, 5]
+import { GYM_DAYS, FOOTBALL_DAYS } from '@/lib/constants'
 
 function gymVolume(allLogs: SessionLog[]): number {
   let vol = 0

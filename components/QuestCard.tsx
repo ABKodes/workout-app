@@ -21,7 +21,7 @@ export default function QuestCard({ quests }: Props) {
           />
         ))}
       </div>
-      <span className="text-[9px] font-bold text-[#7c3aed] ml-auto">{completedCount}/3</span>
+      <span className="text-[9px] font-bold text-[#7c3aed] ml-auto">{completedCount}/{quests.length}</span>
     </div>
   )
 }

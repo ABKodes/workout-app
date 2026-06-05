@@ -24,11 +24,12 @@ export default function XPFloat({ items }: Props) {
         .xp-float-anim { animation: xpFloatUp 1s ease-out forwards; }
       `}</style>
       <div className="fixed bottom-24 right-4 z-50 pointer-events-none flex flex-col-reverse gap-1.5" aria-hidden="true">
-        {items.map(item => (
+        {items.map((item, idx) => (
           <div
             key={item.id}
             className="xp-float-anim text-[13px] font-black drop-shadow-lg whitespace-nowrap"
             style={{
+              animationDelay: `${idx * 100}ms`,
               color: item.isQuest ? '#4ade80' : item.isPR ? '#facc15' : '#a78bfa',
               textShadow: item.isQuest
                 ? '0 0 12px #22c55e'

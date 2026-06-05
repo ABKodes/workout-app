@@ -2,6 +2,8 @@
 import { useMemo, useEffect } from 'react'
 import { SessionLog } from '@/types'
 import { days } from '@/lib/data'
+import { GYM_DAYS, FOOTBALL_DAYS } from '@/lib/constants'
+import { getPRMax } from '@/lib/useXP'
 
 export interface Quest {
   id: string
@@ -9,9 +11,6 @@ export interface Quest {
   xp: number
   complete: boolean
 }
-
-const GYM_DAYS    = [0, 1, 4]
-const FOOTBALL_DAYS = [3, 5]
 
 const QUEST_LABELS: Record<string, string> = {
   finish_session:    "Complete today's gym session",
@@ -21,11 +20,14 @@ const QUEST_LABELS: Record<string, string> = {
   four_sets:         'Log 4+ sets on any exercise',
   bodyweight:        'Log your body weight today',
   maintain_streak:   'Have 2+ sessions this week',
+  log_weight:        'Log a weight for every exercise',
+  three_sessions:    'Have 3+ sessions this week',
+  any_session:       'Complete any workout today',
 }
 
-const GYM_POOL      = ['finish_session', 'hit_pr', 'no_skip', 'four_sets', 'bodyweight']
-const FOOTBALL_POOL = ['complete_football', 'bodyweight', 'maintain_streak']
-const REST_POOL     = ['bodyweight', 'maintain_streak', 'finish_session']
+const GYM_POOL      = ['finish_session', 'hit_pr', 'no_skip', 'four_sets', 'bodyweight', 'log_weight']
+const FOOTBALL_POOL = ['complete_football', 'bodyweight', 'maintain_streak', 'three_sessions', 'any_session']
+const REST_POOL     = ['bodyweight', 'maintain_streak', 'three_sessions', 'any_session', 'finish_session']
 
 function seededShuffle<T>(arr: T[], seed: string): T[] {
   let h = 0
@@ -58,11 +60,7 @@ function checkQuest(
         const todayWts = done.map(s => parseFloat(s.weight)).filter(w => !isNaN(w) && w > 0)
         if (!todayWts.length) continue
         const todayMax = Math.max(...todayWts)
-        const prevWts = allLogs
-          .filter(l => l.date !== todayLog.date && l.exercises[name])
-          .flatMap(l => (l.exercises[name].sets || []).filter(s => s?.done).map(s => parseFloat(s.weight)))
-          .filter(w => !isNaN(w) && w > 0)
-        const hMax = prevWts.length ? Math.max(...prevWts) : 0
+        const hMax = getPRMax(name, allLogs, todayLog.date)
         if (todayMax > hMax && hMax > 0) return true
       }
       return false
@@ -88,6 +86,24 @@ function checkQuest(
 
     case 'bodyweight':
       return hasBWToday
+
+    case 'log_weight':
+      if (!todayLog) return false
+      return Object.values(todayLog.exercises).some(
+        exLog => (exLog.sets || []).filter(s => s?.done).some(s => parseFloat(s.weight) > 0)
+      )
+
+    case 'three_sessions': {
+      const now = new Date()
+      const diff = now.getDay() === 0 ? 6 : now.getDay() - 1
+      const weekStart = new Date(now)
+      weekStart.setDate(now.getDate() - diff)
+      const weekStartStr = weekStart.toISOString().slice(0, 10)
+      return allLogs.filter(l => l.completed && l.date >= weekStartStr).length >= 3
+    }
+
+    case 'any_session':
+      return todayLog?.completed ?? false
 
     case 'maintain_streak': {
       const now = new Date()

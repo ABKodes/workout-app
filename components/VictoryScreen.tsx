@@ -69,7 +69,7 @@ export default function VictoryScreen({ allLogs, quests, questXP, sessionXP, vol
                     }}
                   />
                 </div>
-                <span className="text-[10px] font-bold shrink-0" style={{ color: cfg.color }}>{val}</span>
+                <span className="text-[10px] font-bold shrink-0" style={{ color: cfg.color }}>{val}<span className="font-normal opacity-50">/100</span></span>
               </div>
             )
           })}
