@@ -101,8 +101,8 @@ export const days: Day[] = [
         head: 'Plyometrics — after legs, keep volume low',
         plyo: true,
         rows: [
-          { name: 'Depth Jumps', note: 'Step off a low box, land softly, immediately explode upward. Trains reactive strength — absorb and redirect force instantly.', sets: '2', reps: '6–8', rpe: 'Max', rest: '90s', restSeconds: 0, bodyweight: true },
-          { name: 'Split Squat Jumps', note: 'From lunge, jump and switch legs in air. Builds single-leg explosiveness and hip flexor power for accelerating out of turns.', sets: '2', reps: '6/leg', rpe: 'Max', rest: '75s', restSeconds: 0, bodyweight: true },
+          { name: 'Depth Jumps', note: 'Step off a low box, land softly, immediately explode upward. Trains reactive strength — absorb and redirect force instantly.', sets: '2', reps: '6–8', rpe: 'Max', rest: '90s', restSeconds: 90, bodyweight: true },
+          { name: 'Split Squat Jumps', note: 'From lunge, jump and switch legs in air. Builds single-leg explosiveness and hip flexor power for accelerating out of turns.', sets: '2', reps: '6/leg', rpe: 'Max', rest: '75s', restSeconds: 75, bodyweight: true },
           { name: 'Cool-down + full stretch', note: 'Full lower body — quads, hamstrings, hip flexors, calves, adductors. 20–30s each. Critical — you play Saturday.', sets: '—', reps: '15 min', rpe: '—', rest: '—', restSeconds: 0 },
         ],
       },

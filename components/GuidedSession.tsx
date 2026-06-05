@@ -234,7 +234,7 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
   }, [showCleanSet])
 
   const handleDone = useCallback(() => {
-    onLogSet(activeName, setIdx, { weight: localWeight, reps: localReps, done: true })
+    onLogSet(activeName, setIdx, { weight: ex.bodyweight ? '' : localWeight, reps: localReps, done: true })
 
     // PR check — if PR fires, skip clean set toast
     const allExLogs = allLogs.flatMap(l => {
@@ -257,9 +257,9 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
 
   const handleSameAs = useCallback(() => {
     if (!sameSource) return
-    setLocalWeight(sameSource.weight)
+    if (!ex.bodyweight) setLocalWeight(sameSource.weight)
     setLocalReps(sameSource.reps)
-    onLogSet(activeName, setIdx, { weight: sameSource.weight, reps: sameSource.reps, done: true })
+    onLogSet(activeName, setIdx, { weight: ex.bodyweight ? '' : sameSource.weight, reps: sameSource.reps, done: true })
     if (ex.restSeconds > 0) setResting(true)
     else advanceNext()
   }, [sameSource, activeName, setIdx, onLogSet, advanceNext, ex])
@@ -417,18 +417,29 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
 
           {/* Drum pickers */}
           <div className="flex gap-6 justify-center mb-4">
-            <DrumPicker
-              values={WEIGHTS}
-              selected={nearest(WEIGHTS, localWeight)}
-              onChange={w => setLocalWeight(w)}
-              label="kg"
-              width={100}
-            />
+            {ex.bodyweight ? (
+              <div className="flex flex-col items-center gap-1">
+                <p className="text-[10px] text-gray-600 uppercase tracking-widest font-bold">weight</p>
+                <div className="px-5 py-3 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] text-gray-500 text-sm font-semibold">
+                  Bodyweight
+                </div>
+              </div>
+            ) : (
+              <DrumPicker
+                values={WEIGHTS}
+                selected={nearest(WEIGHTS, localWeight)}
+                onChange={w => setLocalWeight(w)}
+                label="kg"
+                ariaLabel="Weight in kilograms"
+                width={100}
+              />
+            )}
             <DrumPicker
               values={REPS}
               selected={nearest(REPS, localReps)}
               onChange={r => setLocalReps(r)}
               label="reps"
+              ariaLabel="Number of reps"
               width={80}
             />
           </div>
@@ -440,7 +451,10 @@ export default function GuidedSession({ day, dayIndex, todayLog, prevLog, allLog
                 onClick={handleSameAs}
                 className="text-[12px] text-violet-400 border border-violet-900/60 bg-[#12002a] rounded-full px-4 py-1.5 hover:bg-violet-900/40 transition-colors"
               >
-                ↩ {sameLabel} · {sameSource.weight}kg × {sameSource.reps}
+                {ex.bodyweight
+                  ? `↩ ${sameLabel} · ${sameSource.reps} reps`
+                  : `↩ ${sameLabel} · ${sameSource.weight}kg × ${sameSource.reps}`
+                }
               </button>
             </div>
           )}
