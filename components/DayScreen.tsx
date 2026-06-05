@@ -1,8 +1,11 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Day, Exercise, SessionLog } from '@/types'
 import { useLog } from '@/lib/useLog'
 import { useSubstitutions } from '@/lib/useSubstitutions'
+import { useBodyWeight } from '@/lib/useBodyWeight'
+import { useQuests } from '@/lib/useQuests'
+import { computeSingleSessionXP } from '@/lib/useXP'
 import ExerciseCard from './ExerciseCard'
 import StreakBar from './StreakBar'
 import AlertBanner from './AlertBanner'
@@ -15,6 +18,9 @@ import GuidedSession from './GuidedSession'
 import ExerciseDemo from './ExerciseDemo'
 import QuickWeightLog from './QuickWeightLog'
 import Confetti from './Confetti'
+import QuestCard from './QuestCard'
+import XPFloat, { XPFloatItem } from './XPFloat'
+import VictoryScreen from './VictoryScreen'
 
 interface Props {
   day: Day
@@ -28,6 +34,8 @@ function upperReps(reps: string): number {
   return parseInt(nums[nums.length - 1])
 }
 
+let floatIdCounter = 0
+
 export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const { todayLog, prevLog, logSet, setNote, finishSession } = useLog(dayIndex)
   const { getActiveName, isSwapped, toggleSwap } = useSubstitutions(dayIndex)
@@ -38,6 +46,27 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   const [finished, setFinished] = useState(false)
   const [guided, setGuided] = useState(false)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [xpFloats, setXpFloats] = useState<XPFloatItem[]>([])
+  const [capturedSessionXP, setCapturedSessionXP] = useState(0)
+  const [capturedDuration, setCapturedDuration] = useState(0)
+  const sessionStart = useRef(Date.now())
+
+  const { entries: bwEntries } = useBodyWeight()
+  const today = new Date().toISOString().slice(0, 10)
+  const hasBWToday = bwEntries.some(e => e.date === today)
+  const { quests, questXP } = useQuests(dayIndex, todayLog ?? null, allLogs, hasBWToday)
+
+  // Track quest completions to fire XP floats
+  const prevQuestCompletions = useRef<string[]>([])
+  useEffect(() => {
+    const nowCompleted = quests.filter(q => q.complete).map(q => q.id)
+    const newOnes = nowCompleted.filter(id => !prevQuestCompletions.current.includes(id))
+    if (newOnes.length) {
+      newOnes.forEach(() => addXPFloat(150, false, true))
+    }
+    prevQuestCompletions.current = nowCompleted
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quests])
 
   const isGym = day.badge === 'gym'
   const allExercises = day.sections.flatMap(s => s.rows).filter(e => parseInt(e.sets) > 0)
@@ -48,14 +77,35 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
     return log && (log.sets || []).filter(s => s?.done).length >= n
   }).length
 
-  const handleFinish = () => {
-    finishSession()
-    setFinished(true)
-    setShowConfetti(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  const addXPFloat = useCallback((xp: number, isPR = false, isQuest = false) => {
+    const id = floatIdCounter++
+    setXpFloats(prev => [...prev, { id, xp, isPR, isQuest }])
+    setTimeout(() => setXpFloats(prev => prev.filter(f => f.id !== id)), 1100)
+  }, [])
 
-  // Session summary stats — computed once on finish
+  // Detect PR for a given exercise name + weight vs allLogs
+  const detectPR = useCallback((name: string, weight: number): boolean => {
+    if (!todayLog || weight <= 0) return false
+    const prevWts = allLogs
+      .filter(l => l.date !== todayLog.date && l.exercises[name])
+      .flatMap(l => (l.exercises[name].sets || []).filter(s => s?.done).map(s => parseFloat(s.weight)))
+      .filter(w => !isNaN(w) && w > 0)
+    if (!prevWts.length) return false
+    return weight > Math.max(...prevWts)
+  }, [allLogs, todayLog])
+
+  const handleSetUpdate = useCallback((name: string, setIndex: number, data: { weight?: string; reps?: string; done?: boolean }) => {
+    logSet(name, setIndex, data)
+    if (data.done === true) {
+      addXPFloat(10)
+      const w = parseFloat(data.weight ?? '')
+      if (!isNaN(w) && detectPR(name, w)) {
+        addXPFloat(100, true)
+      }
+    }
+  }, [logSet, addXPFloat, detectPR])
+
+  // Session summary — computed at finish
   const sessionSummary = finished && todayLog ? (() => {
     let totalVolume = 0
     const prs: string[] = []
@@ -68,14 +118,12 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
       const done = (log.sets || []).filter(s => s?.done)
       if (done.length === 0) return
 
-      // Volume
       done.forEach(s => {
         const w = parseFloat(s.weight)
         const r = parseInt(s.reps)
         if (!isNaN(w) && !isNaN(r)) totalVolume += w * r
       })
 
-      // PR detection — compare today's max weight vs all previous logs
       const todayMax = Math.max(...done.map(s => parseFloat(s.weight)).filter(w => !isNaN(w)))
       const prevMax = allLogs
         .filter(l => l.date !== todayLog.date && l.exercises[activeName])
@@ -86,7 +134,6 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
         prs.push(`${activeName} — ${todayMax}kg`)
       }
 
-      // Progression tips
       const upper = upperReps(e.reps)
       if (done.every(s => parseInt(s.reps) >= upper) && !isNaN(todayMax)) {
         progressTipsList.push(`${activeName}: try ${todayMax + 2.5}kg next session`)
@@ -95,6 +142,18 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
 
     return { totalVolume: Math.round(totalVolume), prs, progressTipsList }
   })() : null
+
+  const handleFinish = () => {
+    // Capture session XP before finish updates state
+    const sXP = todayLog ? computeSingleSessionXP(todayLog, allLogs) : 0
+    setCapturedSessionXP(sXP)
+    setCapturedDuration(Math.round((Date.now() - sessionStart.current) / 60000))
+
+    finishSession()
+    setFinished(true)
+    setShowConfetti(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   if (guided) {
     return (
@@ -115,6 +174,9 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
   return (
     <div className="pb-28">
       <StreakBar allLogs={allLogs} />
+
+      {/* Daily quest card */}
+      <QuestCard quests={quests} />
 
       {/* Header */}
       <div className="mb-4">
@@ -170,7 +232,7 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
                   allLogs={allLogs}
                   isSwapped={isSwapped(exercise.name)}
                   onSwap={subName ? () => toggleSwap(exercise.name, subName) : undefined}
-                  onSetUpdate={(si2, data) => logSet(activeName, si2, data)}
+                  onSetUpdate={(si2, data) => handleSetUpdate(activeName, si2, data)}
                   onSetDone={secs => secs > 0 && setTimerSeconds(secs)}
                   onOpenOrm={() => setOrmExercise(exercise)}
                   onOpenPlates={() => setPlatesExercise(exercise)}
@@ -207,76 +269,53 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
         </div>
       ))}
 
-      {/* Session note + finish (gym days only) */}
+      {/* Session note + finish/victory (gym only) */}
       {isGym && (
         <div className="mt-2 mb-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Session notes</p>
-          <textarea
-            rows={3}
-            placeholder="How did it feel? What to beat next time?"
-            defaultValue={todayLog?.sessionNote ?? ''}
-            onBlur={e => setNote(e.target.value)}
-            className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-violet-500 focus:outline-none resize-none leading-relaxed"
-          />
-          {!finished ? (
-            <button
-              onClick={handleFinish}
-              className="mt-3 w-full py-3 bg-violet-500 hover:bg-violet-400 text-black font-black text-sm rounded-xl transition-colors"
-            >
-              ✓ Finish session
-            </button>
-          ) : (
-            <div className="mt-3 space-y-3">
-              {/* Summary header */}
-              <div className="w-full py-3 bg-[#0a2a12] border border-green-900 text-green-400 font-bold text-sm rounded-xl text-center">
-                🔥 Session logged — great work!
+          {!finished && (
+            <>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Session notes</p>
+              <textarea
+                rows={3}
+                placeholder="How did it feel? What to beat next time?"
+                defaultValue={todayLog?.sessionNote ?? ''}
+                onBlur={e => setNote(e.target.value)}
+                className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl px-4 py-3 text-sm text-white placeholder-gray-700 focus:border-violet-500 focus:outline-none resize-none leading-relaxed"
+              />
+              <button
+                onClick={handleFinish}
+                className="mt-3 w-full py-3 bg-violet-500 hover:bg-violet-400 text-black font-black text-sm rounded-xl transition-colors"
+              >
+                ✓ Finish session
+              </button>
+            </>
+          )}
+
+          {finished && sessionSummary && (
+            <VictoryScreen
+              allLogs={allLogs}
+              quests={quests}
+              questXP={questXP}
+              sessionXP={capturedSessionXP}
+              volume={sessionSummary.totalVolume}
+              prs={sessionSummary.prs}
+              durationMins={capturedDuration}
+              onClose={() => {
+                setFinished(false)
+                setShowConfetti(false)
+              }}
+            />
+          )}
+
+          {/* Progression tips (shown after Victory too) */}
+          {finished && sessionSummary && sessionSummary.progressTipsList.length > 0 && (
+            <div className="mt-3 bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Next session</p>
+              <div className="space-y-1.5">
+                {sessionSummary.progressTipsList.map((t, i) => (
+                  <p key={i} className="text-[12px] text-gray-400 leading-relaxed">💡 {t}</p>
+                ))}
               </div>
-
-              {/* Stats row */}
-              {sessionSummary && (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-3 text-center">
-                    <div className="text-lg font-black text-white">{doneCount}</div>
-                    <div className="text-[9px] text-gray-600 uppercase tracking-wider mt-0.5">exercises</div>
-                  </div>
-                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-3 text-center">
-                    <div className="text-lg font-black text-violet-400">
-                      {sessionSummary.totalVolume >= 1000
-                        ? `${(sessionSummary.totalVolume / 1000).toFixed(1)}t`
-                        : `${sessionSummary.totalVolume}kg`}
-                    </div>
-                    <div className="text-[9px] text-gray-600 uppercase tracking-wider mt-0.5">volume</div>
-                  </div>
-                  <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-3 text-center">
-                    <div className="text-lg font-black text-yellow-400">{sessionSummary.prs.length}</div>
-                    <div className="text-[9px] text-gray-600 uppercase tracking-wider mt-0.5">PRs</div>
-                  </div>
-                </div>
-              )}
-
-              {/* PRs hit */}
-              {sessionSummary && sessionSummary.prs.length > 0 && (
-                <div className="bg-[#1a1200] border border-yellow-900/50 rounded-xl p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-yellow-600 mb-2">New PRs</p>
-                  <div className="space-y-1">
-                    {sessionSummary.prs.map((pr, i) => (
-                      <p key={i} className="text-sm text-yellow-400 font-semibold">★ {pr}</p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Progression tips */}
-              {sessionSummary && sessionSummary.progressTipsList.length > 0 && (
-                <div className="bg-[#111] border border-[#1e1e1e] rounded-xl p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">Next session</p>
-                  <div className="space-y-1.5">
-                    {sessionSummary.progressTipsList.map((t, i) => (
-                      <p key={i} className="text-[12px] text-gray-400 leading-relaxed">💡 {t}</p>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>
@@ -294,6 +333,9 @@ export default function DayScreen({ day, dayIndex, allLogs }: Props) {
         <ExerciseDemo name={demoExercise.name} cleanNote={demoExercise.note} onClose={() => setDemoExercise(null)} />
       )}
       {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
+
+      {/* XP floats overlay */}
+      <XPFloat items={xpFloats} />
     </div>
   )
 }

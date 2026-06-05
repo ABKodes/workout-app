@@ -5,7 +5,7 @@ import NutritionScreen from './NutritionScreen'
 import BodyWeightSection from './BodyWeightSection'
 import ProgressSection from './ProgressSection'
 import NotificationSettings from './NotificationSettings'
-import AchievementsScreen from './AchievementsScreen'
+import CharacterScreen from './CharacterScreen'
 
 type Tab = 'progress' | 'bodyweight' | 'nutrition' | 'achievements' | 'settings'
 
@@ -21,7 +21,7 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
     { id: 'progress',     label: 'Progress', icon: '📈' },
     { id: 'bodyweight',   label: 'Weight',   icon: '⚖️' },
     { id: 'nutrition',    label: 'Nutrition', icon: '🥗' },
-    { id: 'achievements', label: 'Badges',    icon: '🏆' },
+    { id: 'achievements', label: 'Character',  icon: '⚔️' },
     { id: 'settings',     label: 'Settings',  icon: '⚙️' },
   ]
 
@@ -51,7 +51,7 @@ export default function StatsScreen({ allLogs, activeDayIndex }: Props) {
       {tab === 'nutrition'    && <NutritionScreen />}
       {tab === 'bodyweight'   && <BodyWeightSection />}
       {tab === 'progress'     && <ProgressSection allLogs={allLogs} activeDayIndex={activeDayIndex} />}
-      {tab === 'achievements' && <AchievementsScreen allLogs={allLogs} />}
+      {tab === 'achievements' && <CharacterScreen allLogs={allLogs} />}
       {tab === 'settings'     && <NotificationSettings />}
     </div>
   )
