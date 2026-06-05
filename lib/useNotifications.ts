@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 const KEY = 'notif_time_v1'
 const ENABLED_KEY = 'notif_enabled_v1'
 
+const hasNotification = () => typeof window !== 'undefined' && 'Notification' in window
+
 async function getSW(): Promise<ServiceWorker | null> {
   if (!('serviceWorker' in navigator)) return null
   const reg = await navigator.serviceWorker.ready
@@ -17,7 +19,7 @@ export function useNotifications() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    setPermission(Notification.permission)
+    if (hasNotification()) setPermission(Notification.permission)
     setEnabledState(localStorage.getItem(ENABLED_KEY) === 'true')
     setTimeState(localStorage.getItem(KEY) || '18:00')
 
@@ -34,13 +36,15 @@ export function useNotifications() {
     })
   }, [enabled, time, permission])
 
-  const requestPermission = async () => {
+  const requestPermission = async (): Promise<NotificationPermission> => {
+    if (!hasNotification()) return 'denied'
     const result = await Notification.requestPermission()
     setPermission(result)
     return result
   }
 
   const setEnabled = async (val: boolean) => {
+    if (!hasNotification()) return
     if (val && permission !== 'granted') {
       const result = await requestPermission()
       if (result !== 'granted') return
@@ -58,6 +62,7 @@ export function useNotifications() {
   }
 
   const testNotification = async () => {
+    if (!hasNotification()) return
     if (permission !== 'granted') {
       const result = await requestPermission()
       if (result !== 'granted') return

@@ -35,7 +35,7 @@ function AppContent() {
     navigator.serviceWorker.register('/sw.js').then(async () => {
       const enabled = localStorage.getItem('notif_enabled_v1') === 'true'
       const time = localStorage.getItem('notif_time_v1') || '18:00'
-      if (enabled && Notification.permission === 'granted') {
+      if (enabled && 'Notification' in window && Notification.permission === 'granted') {
         const reg = await navigator.serviceWorker.ready
         reg.active?.postMessage({ type: 'SCHEDULE', time })
       }
