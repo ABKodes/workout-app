@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Workout Plan',
@@ -11,14 +14,12 @@ export const viewport: Viewport = {
   themeColor: '#0d0d0d',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="bg-[#0d0d0d] text-white antialiased" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+    <html lang="en" className={`h-full ${inter.className}`}>
+      <body className="bg-[#0d0d0d] text-white antialiased">
         {children}
       </body>
     </html>
