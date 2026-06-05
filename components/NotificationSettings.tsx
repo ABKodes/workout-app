@@ -27,13 +27,13 @@ export default function NotificationSettings() {
   const [resetting, setResetting] = useState(false)
 
   const [pregameEnabled, setPregameEnabledState] = useState(
-    () => localStorage.getItem(PREGAME_ENABLED_KEY) === 'true'
+    () => typeof window !== 'undefined' && localStorage.getItem(PREGAME_ENABLED_KEY) === 'true'
   )
   const [thuTime, setThuTimeState] = useState(
-    () => localStorage.getItem(PREGAME_THU_KEY) || '13:00'
+    () => (typeof window !== 'undefined' && localStorage.getItem(PREGAME_THU_KEY)) || '13:00'
   )
   const [satTime, setSatTimeState] = useState(
-    () => localStorage.getItem(PREGAME_SAT_KEY) || '11:00'
+    () => (typeof window !== 'undefined' && localStorage.getItem(PREGAME_SAT_KEY)) || '11:00'
   )
 
   const setPregameEnabled = useCallback((val: boolean) => {
